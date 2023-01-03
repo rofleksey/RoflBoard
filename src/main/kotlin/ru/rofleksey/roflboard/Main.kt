@@ -1,6 +1,8 @@
 package ru.rofleksey.roflboard
 
+import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent
 import javafx.application.Application
+import javafx.beans.property.ReadOnlyObjectProperty
 import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.Scene
@@ -13,41 +15,55 @@ import javafx.scene.input.KeyCombination
 import javafx.scene.layout.*
 import javafx.stage.FileChooser
 import javafx.stage.Stage
-import ru.rofleksey.roflboard.controller.ComplexSoundController
-import ru.rofleksey.roflboard.controller.KeyboardSoundController
-import ru.rofleksey.roflboard.controller.NetworkSoundController
+import ru.rofleksey.roflboard.controller.ComplexController
+import ru.rofleksey.roflboard.controller.KeyboardController
+import ru.rofleksey.roflboard.controller.NetworkController
 import ru.rofleksey.roflboard.data.AppData
 import ru.rofleksey.roflboard.data.SoundEntryJson
 import ru.rofleksey.roflboard.keyboard.GlobalEventsManager
+import ru.rofleksey.roflboard.keyboard.KeyboardListener
+import ru.rofleksey.roflboard.keyboard.KeyboardUtils
 import ru.rofleksey.roflboard.sound.ClipSetFactory
 import ru.rofleksey.roflboard.sound.SoundEngine
 import ru.rofleksey.roflboard.sound.SoundFacade
-import ru.rofleksey.roflboard.sound.SoundsUtils
+import ru.rofleksey.roflboard.sound.SoundUtils
 import ru.rofleksey.roflboard.ui.SoundModal
 import ru.rofleksey.roflboard.ui.SoundView
 import ru.rofleksey.roflboard.ui.UiUtils
+import ru.rofleksey.roflboard.voice.VoiceEngine
+import java.awt.Desktop
+import java.net.URL
 
 
 open class Main : Application() {
     private val appData = AppData()
     private val soundEngine = SoundEngine()
-    private val soundController = ComplexSoundController(listOf(KeyboardSoundController(), NetworkSoundController()))
+    private val soundController = ComplexController(listOf(KeyboardController(), NetworkController()))
     private val clipSetFactory = ClipSetFactory()
     private val soundFacade = SoundFacade(
         soundEngine,
         clipSetFactory,
         soundController,
         appData.getSoundEntryList(),
-        appData.getActiveMixersList(),
+        appData.getActiveSoundBoardMixersList(),
         appData.getVolumeMain(),
         appData.getVolumeSecondary()
     )
+    private val voiceEngine = VoiceEngine(
+        appData.getVoiceFeatureEnabled(),
+        appData.getVoiceActive(),
+        appData.getVoiceMixerParams(),
+        appData.getVolumeVoice(),
+        appData.getVoicePitchFactor(),
+        appData.getVoiceHighPassFactor()
+    )
 
     override fun start(primaryStage: Stage) {
-        appData.updateAvailableMixers(SoundsUtils.listMixers())
+        appData.updateAvailableMixers(SoundUtils.listMixers())
         GlobalEventsManager.INSTANCE.init()
-        soundController.register(soundEngine)
+        soundController.register(soundEngine, voiceEngine, appData)
         soundFacade.init()
+        voiceEngine.init()
 
         val root = BorderPane()
 
@@ -59,10 +75,12 @@ open class Main : Application() {
         primaryStage.apply {
             title = appData.getConfigName().get()
             icons.add(UiUtils.LOGO)
+            isResizable = false
             titleProperty().bind(appData.getConfigName())
             scene = mainScene
             setOnHiding {
                 GlobalEventsManager.INSTANCE.dispose()
+                voiceEngine.dispose()
             }
             show()
         }
@@ -145,10 +163,25 @@ open class Main : Application() {
             items.addAll(newItem, loadItem, saveItem, saveAsItem)
         }
 
-        val aboutMenu = Menu("About")
+        val helpMenu = Menu("Help")
+
+        val aboutMenuItem = MenuItem("About")
+        aboutMenuItem.setOnAction {
+
+        }
+
+        val motivationMenuItem = MenuItem("Motivation")
+        motivationMenuItem.setOnAction {
+            try {
+                Desktop.getDesktop().browse(URL("https://youtu.be/NOZONW-UK0w?t=23").toURI())
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+            }
+        }
+        helpMenu.items.addAll(aboutMenuItem, motivationMenuItem)
 
         val menuBar = MenuBar().apply {
-            menus.addAll(configMenu, aboutMenu)
+            menus.addAll(configMenu, helpMenu)
         }
 
         root.top = menuBar
@@ -160,12 +193,13 @@ open class Main : Application() {
         }
 
         val soundsRegion = initSounds(stage)
+        val voiceRegion = initVoice(stage, tabPane.selectionModel.selectedItemProperty())
+
         val soundsTab = Tab("SoundBoard", soundsRegion)
+        val voiceTab = Tab("Voice", voiceRegion)
+//        val spamTab = Tab("Spam", Label("Not implemented yet"))
 
-
-        val spamTab = Tab("Spam", Label("Not implemented yet"))
-
-        tabPane.tabs.addAll(soundsTab, spamTab)
+        tabPane.tabs.addAll(soundsTab, voiceTab)
 
         root.center = tabPane
     }
@@ -300,7 +334,7 @@ open class Main : Application() {
         }
         val refreshMixersButton = Button("Refresh")
         refreshMixersButton.setOnAction {
-            appData.updateAvailableMixers(SoundsUtils.listMixers())
+            appData.updateAvailableMixers(SoundUtils.listMixers())
         }
         mainMixerComboBox.maxWidth = Double.MAX_VALUE
         HBox.setHgrow(mainMixerComboBox, Priority.ALWAYS)
@@ -358,6 +392,145 @@ open class Main : Application() {
         soundsRoot.bottom = controlsRoot
 
         return controlsRoot
+    }
+
+    fun initVoice(stage: Stage, tabProperty: ReadOnlyObjectProperty<Tab>): Region {
+        var recording = false
+
+        val voiceRoot = StackPane()
+
+        val voiceContent = VBox(10.0).apply {
+            isFillWidth = true
+        }
+        StackPane.setMargin(voiceContent, Insets(8.0, 8.0, 8.0, 8.0))
+
+        val voiceCheckBox = CheckBox("Enabled").apply {
+            selectedProperty().bindBidirectional(appData.getVoiceFeatureEnabled())
+        }
+
+        val voiceSettings = VBox(10.0).apply {
+            isFillWidth = true
+            disableProperty().bind(appData.getVoiceFeatureEnabled().not())
+        }
+
+        val voiceMixerLabel = Label("Main input (real mic)")
+        val voiceMixerHBox = HBox(5.0)
+        val voiceMixerComboBox = ComboBox(appData.getAvailableMixersList())
+        voiceMixerComboBox.selectionModel.selectedIndexProperty().addListener { _, _, newIndex ->
+            if (newIndex.toInt() >= 0) {
+                appData.setVoiceMixer(newIndex.toInt())
+            }
+        }
+        appData.getMixerVoiceChange().addListener { _, _, mixerVoice ->
+            voiceMixerComboBox.selectionModel.select(mixerVoice)
+        }
+        val refreshMixersButton = Button("Refresh")
+        refreshMixersButton.setOnAction {
+            appData.updateAvailableMixers(SoundUtils.listMixers())
+        }
+        voiceMixerComboBox.maxWidth = Double.MAX_VALUE
+        HBox.setHgrow(voiceMixerComboBox, Priority.ALWAYS)
+        voiceMixerHBox.children.addAll(voiceMixerComboBox, refreshMixersButton)
+
+        val voiceKeyHBox = HBox(5.0).apply {
+            alignment = Pos.CENTER_LEFT
+        }
+        val voiceKeyLabel = Label(KeyboardUtils.getDefaultKeyText(appData.getVoiceKey().get(), "Key"))
+        appData.getVoiceKey().addListener { _, _, key ->
+            voiceKeyLabel.text = KeyboardUtils.getDefaultKeyText(key, "Key")
+        }
+        val voiceKeyButton = Button("Record")
+
+        val listener = object : KeyboardListener {
+            override fun onKeyPressed(key: Int) {
+                recording = false
+                voiceKeyButton.text = "Record"
+                GlobalEventsManager.INSTANCE.unregister(this)
+                if (key == NativeKeyEvent.VC_ESCAPE) {
+                    voiceKeyLabel.text = KeyboardUtils.getDefaultKeyText(appData.getVoiceKey().get(), "Key")
+                    return
+                }
+                appData.setVoiceKey(key)
+            }
+
+            override fun onKeyReleased(key: Int) {
+
+            }
+        }
+        voiceKeyButton.setOnAction {
+            recording = !recording
+            if (recording) {
+                voiceKeyLabel.text = "Press any key"
+                voiceKeyButton.text = "Apply"
+                GlobalEventsManager.INSTANCE.register(listener)
+                tabProperty.addListener { _, _, _ ->
+                    recording = false
+                    voiceKeyButton.text = "Record"
+                    voiceKeyLabel.text = KeyboardUtils.getDefaultKeyText(appData.getVoiceKey().get(), "Key")
+                    GlobalEventsManager.INSTANCE.unregister(listener)
+                }
+            } else {
+                voiceKeyButton.text = "Record"
+                voiceKeyLabel.text = KeyboardUtils.getDefaultKeyText(appData.getVoiceKey().get(), "Key")
+                GlobalEventsManager.INSTANCE.unregister(listener)
+            }
+        }
+
+        voiceKeyHBox.children.addAll(voiceKeyLabel, voiceKeyButton)
+
+        val voiceVolumeHBox = HBox(5.0).apply {
+            alignment = Pos.CENTER_LEFT
+        }
+        val voiceVolumeLabel = Label("Gain")
+        val voiceVolumeSlider = Slider(1.0, 50.0, appData.getVolumeVoice().get().toDouble())
+        voiceVolumeSlider.valueProperty().bindBidirectional(appData.getVolumeVoice())
+        val voiceVolumeReset = Button("Reset")
+        voiceVolumeReset.setOnAction {
+            appData.getVolumeVoice().set(1.0f)
+        }
+        HBox.setHgrow(voiceVolumeSlider, Priority.ALWAYS)
+        voiceVolumeHBox.children.addAll(voiceVolumeLabel, voiceVolumeSlider, voiceVolumeReset)
+
+        val voicePitchHBox = HBox(5.0).apply {
+            alignment = Pos.CENTER_LEFT
+        }
+        val voicePitchLabel = Label("Pitch")
+        val voicePitchSlider = Slider(0.1, 1.5, appData.getVoicePitchFactor().get().toDouble())
+        voicePitchSlider.valueProperty().bindBidirectional(appData.getVoicePitchFactor())
+        val voicePitchReset = Button("Reset")
+        voicePitchReset.setOnAction {
+            appData.getVoicePitchFactor().set(1.0f)
+        }
+        HBox.setHgrow(voicePitchSlider, Priority.ALWAYS)
+        voicePitchHBox.children.addAll(voicePitchLabel, voicePitchSlider, voicePitchReset)
+
+        val voiceHighPassHBox = HBox(5.0).apply {
+            alignment = Pos.CENTER_LEFT
+        }
+        val voiceHighPassLabel = Label("HighPass Freq")
+        val voiceHighPassSlider = Slider(0.0, 100000.0, appData.getVoiceHighPassFactor().get().toDouble())
+        voiceHighPassSlider.valueProperty().bindBidirectional(appData.getVoiceHighPassFactor())
+        val voiceHighPassReset = Button("Reset")
+        voiceHighPassReset.setOnAction {
+            appData.getVoiceHighPassFactor().set(0.0f)
+        }
+        HBox.setHgrow(voiceHighPassSlider, Priority.ALWAYS)
+        voiceHighPassHBox.children.addAll(voiceHighPassLabel, voiceHighPassSlider, voiceHighPassReset)
+
+        voiceSettings.children.addAll(
+            voiceMixerLabel,
+            voiceMixerHBox,
+            voiceKeyHBox,
+            voiceVolumeHBox,
+            voicePitchHBox,
+            voiceHighPassHBox
+        )
+
+        voiceContent.children.addAll(voiceCheckBox, voiceSettings)
+
+        voiceRoot.children.add(voiceContent)
+
+        return voiceRoot
     }
 }
 

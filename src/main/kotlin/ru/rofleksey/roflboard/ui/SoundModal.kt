@@ -14,8 +14,8 @@ import javafx.stage.Modality
 import javafx.stage.Stage
 import ru.rofleksey.roflboard.data.SoundType
 import ru.rofleksey.roflboard.keyboard.GlobalEventsManager
-import ru.rofleksey.roflboard.keyboard.KeyPressed
 import ru.rofleksey.roflboard.keyboard.KeyboardListener
+import ru.rofleksey.roflboard.keyboard.KeyboardUtils
 import ru.rofleksey.roflboard.sound.SoundEntry
 import ru.rofleksey.roflboard.sound.SoundFacade
 import java.io.File
@@ -23,7 +23,7 @@ import java.io.File
 class SoundModal {
     companion object {
 
-        data class SoundResult(val name: String, val file: File, val type: SoundType, val keys: Set<Int>)
+        data class SoundResult(val name: String, val file: File, val type: SoundType, val keys: Int)
 
         fun show(
             mainStage: Stage,
@@ -36,11 +36,7 @@ class SoundModal {
             } else {
                 null
             }
-            var curKeys = if (soundInfo != null) {
-                LinkedHashSet(soundInfo.keys)
-            } else {
-                null
-            }
+            var curKey = soundInfo?.key
             var recording = false
 
             if (soundInfo != null) {
@@ -98,23 +94,25 @@ class SoundModal {
             }
 
             val keyLabel = Label().apply {
-                text = curKeys?.joinToString("+") { KeyPressed.fromCode(it).name } ?: "Key"
+                text = KeyboardUtils.getDefaultKeyText(soundInfo?.key, "Key")
             }
             val keyButton = Button("Record")
 
             val listener = object : KeyboardListener {
-                override fun onKeysPressed(curKey: Int, keys: Set<Int>) {
-                    if (curKey == NativeKeyEvent.VC_ESCAPE) {
-                        recording = false
-                        keyButton.text = "Record"
-                        GlobalEventsManager.INSTANCE.unregister(this)
+                override fun onKeyPressed(key: Int) {
+                    recording = false
+                    keyButton.text = "Record"
+                    GlobalEventsManager.INSTANCE.unregister(this)
+                    if (key == NativeKeyEvent.VC_ESCAPE) {
+                        curKey = soundInfo?.key
+                        keyLabel.text = KeyboardUtils.getDefaultKeyText(curKey, "Key")
                         return
                     }
-                    curKeys = LinkedHashSet(keys)
-                    keyLabel.text = curKeys?.joinToString("+") { KeyPressed.fromCode(it).name }
+                    curKey = key
+                    keyLabel.text = KeyboardUtils.getDefaultKeyText(curKey, "Key")
                 }
 
-                override fun onKeysReleased(curKey: Int, keys: Set<Int>) {
+                override fun onKeyReleased(key: Int) {
 
                 }
             }
@@ -126,6 +124,7 @@ class SoundModal {
                     keyButton.text = "Stop"
                     GlobalEventsManager.INSTANCE.register(listener)
                 } else {
+                    keyLabel.text = KeyboardUtils.getDefaultKeyText(curKey, "Key")
                     keyButton.text = "Record"
                     GlobalEventsManager.INSTANCE.unregister(listener)
                 }
@@ -158,7 +157,7 @@ class SoundModal {
                     return@setOnAction
                 }
 
-                if (curKeys == null) {
+                if (curKey == null) {
                     Alert(Alert.AlertType.WARNING).apply {
                         contentText = "Keys are not recorded"
                         showAndWait()
@@ -166,7 +165,7 @@ class SoundModal {
                     return@setOnAction
                 }
 
-                val newSound = SoundResult(newName, newFile, newType, LinkedHashSet(curKeys!!))
+                val newSound = SoundResult(newName, newFile, newType, curKey!!)
                 callback(newSound)
                 modalStage.close()
             }

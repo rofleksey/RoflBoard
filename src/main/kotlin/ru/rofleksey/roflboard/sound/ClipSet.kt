@@ -9,7 +9,7 @@ import kotlin.math.ln
 
 class ClipSet constructor(private val name: String, private val clips: List<Clip>, private val type: SoundType) {
     companion object {
-        var log: Logger = Logger.getLogger(SoundEngine::class.java.name)
+        private var log: Logger = Logger.getLogger(SoundEngine::class.java.name)
     }
 
     private fun startImpl() {

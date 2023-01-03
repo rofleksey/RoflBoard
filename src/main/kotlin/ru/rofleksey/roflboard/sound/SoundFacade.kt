@@ -3,6 +3,7 @@ package ru.rofleksey.roflboard.sound
 import javafx.beans.property.ReadOnlyFloatProperty
 import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
+import ru.rofleksey.roflboard.controller.Controller
 import ru.rofleksey.roflboard.data.SoundType
 import java.io.File
 import java.util.logging.Logger
@@ -11,14 +12,14 @@ import javax.sound.sampled.Mixer
 class SoundFacade(
     private val soundEngine: SoundEngine,
     private val clipSetFactory: ClipSetFactory,
-    private val soundController: SoundController,
+    private val soundController: Controller,
     private val sounds: ObservableList<SoundEntry>,
     private val mixers: ObservableList<Mixer.Info>,
     private val volumeMain: ReadOnlyFloatProperty,
     private val volumeSecondary: ReadOnlyFloatProperty,
 ) {
     companion object {
-        var log: Logger = Logger.getLogger(SoundFacade::class.java.name)
+        private var log: Logger = Logger.getLogger(SoundFacade::class.java.name)
     }
 
     private fun unload(sound: SoundEntry) {

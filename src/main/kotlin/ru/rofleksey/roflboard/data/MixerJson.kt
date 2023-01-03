@@ -3,7 +3,4 @@ package ru.rofleksey.roflboard.data
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ConfigJson(
-    val soundBoard: SoundBoardJson,
-    val voice: VoiceJson
-)
+data class MixerJson(val name: String, val volume: Float)

@@ -2,7 +2,7 @@ package ru.rofleksey.roflboard.sound
 
 import javax.sound.sampled.AudioSystem
 
-class SoundsUtils {
+class SoundUtils {
     companion object {
         fun listMixers(): List<MixerInfoCached> {
             val result = ArrayList<MixerInfoCached>()

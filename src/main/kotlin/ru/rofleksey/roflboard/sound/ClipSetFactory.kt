@@ -8,7 +8,7 @@ import javax.sound.sampled.Mixer
 
 class ClipSetFactory {
     companion object {
-        var log: Logger = Logger.getLogger(ClipSetFactory::class.java.name)
+        private var log: Logger = Logger.getLogger(ClipSetFactory::class.java.name)
     }
 
     fun load(name: String, mixerInfoList: List<Mixer.Info>, file: File, type: SoundType): ClipSet {

@@ -7,12 +7,15 @@ import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener
 import javafx.application.Platform
 import javafx.scene.control.Alert
+import ru.rofleksey.roflboard.sound.SoundEngine
+import java.util.logging.Logger
 import kotlin.system.exitProcess
 
 
 class GlobalEventsManager private constructor() : NativeKeyListener {
     companion object {
         val INSTANCE = GlobalEventsManager()
+        private var log: Logger = Logger.getLogger(SoundEngine::class.java.name)
     }
 
     private val listeners = ArrayList<KeyboardListener>()
@@ -39,7 +42,7 @@ class GlobalEventsManager private constructor() : NativeKeyListener {
                 Platform.runLater {
                     keysPressed.add(event.keyCode)
                     listeners.forEach { listener ->
-                        listener.onKeysPressed(event.keyCode, keysPressed)
+                        listener.onKeyPressed(event.keyCode)
                     }
                 }
             }
@@ -47,7 +50,7 @@ class GlobalEventsManager private constructor() : NativeKeyListener {
             override fun nativeKeyReleased(event: NativeKeyEvent) {
                 Platform.runLater {
                     listeners.forEach { listener ->
-                        listener.onKeysReleased(event.keyCode, keysPressed)
+                        listener.onKeyReleased(event.keyCode)
                     }
                     keysPressed.remove(event.keyCode)
                 }
@@ -63,12 +66,14 @@ class GlobalEventsManager private constructor() : NativeKeyListener {
     fun register(listener: KeyboardListener) {
         Platform.runLater {
             listeners.add(listener)
+            log.info("Listener registered")
         }
     }
 
     fun unregister(listener: KeyboardListener) {
         Platform.runLater {
             listeners.remove(listener)
+            log.info("Listener unregistered")
         }
     }
 }

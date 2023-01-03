@@ -11,7 +11,7 @@ import javax.sound.sampled.Mixer
 
 class SoundFacade(
     private val soundEngine: SoundEngine,
-    private val clipSetFactory: ClipSetFactory,
+    private val clipSetRotationFactory: ClipSetRotationFactory,
     private val soundController: Controller,
     private val sounds: ObservableList<SoundEntry>,
     private val mixers: ObservableList<Mixer.Info>,
@@ -30,7 +30,7 @@ class SoundFacade(
 
     private fun load(sound: SoundEntry) {
         try {
-            val clipSet = clipSetFactory.load(sound.name, mixers, File(sound.path), sound.type)
+            val clipSet = clipSetRotationFactory.load(sound.name, mixers, sound.paths.map { File(it) }, sound.type)
             clipSet.setVolume(0, volumeMain.get())
             clipSet.setVolume(1, volumeSecondary.get())
             soundEngine.loadClipSet(sound.id, clipSet)
@@ -53,8 +53,8 @@ class SoundFacade(
         soundEngine.setVolume(index, volume)
     }
 
-    fun tryLoad(file: File) {
-        clipSetFactory.load(file.name, mixers, file, SoundType.FULL).dispose()
+    fun tryLoad(files: List<File>) {
+        clipSetRotationFactory.load(files[0].name, mixers, files, SoundType.FULL).dispose()
     }
 
     fun init() {

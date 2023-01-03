@@ -20,8 +20,7 @@ rem ------ SETUP DIRECTORIES AND FILES ----------------------------------------
 rem Remove previously generated java runtime and installers. Copy all required
 rem jar files into the input/libs folder.
 
-IF EXIST target\java-runtime rmdir /S /Q  .\target\java-runtime
-IF EXIST target\installer rmdir /S /Q target\installer
+IF EXIST .\target rmdir /S /Q  .\target
 
 call gradlew.bat copyDependencies
 

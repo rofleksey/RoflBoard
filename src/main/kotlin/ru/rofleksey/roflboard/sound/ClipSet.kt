@@ -7,7 +7,11 @@ import javax.sound.sampled.FloatControl
 import kotlin.math.ln
 
 
-class ClipSet constructor(private val name: String, private val clips: List<Clip>, private val type: SoundType) {
+class ClipSet constructor(
+    private val name: String,
+    private val clips: List<Clip>,
+    private val type: SoundType,
+) {
     companion object {
         private var log: Logger = Logger.getLogger(SoundEngine::class.java.name)
     }
@@ -32,6 +36,7 @@ class ClipSet constructor(private val name: String, private val clips: List<Clip
         }
         val clip = clips[index]
         val control = clip.getControl(FloatControl.Type.MASTER_GAIN) as FloatControl
+        // TODO: replace with something less soy
         val gain = ln(volume.toDouble()) / ln(10.0) * 20.0
         control.shift(control.value, gain.toFloat(), 250 * 1000)
     }
@@ -75,7 +80,7 @@ class ClipSet constructor(private val name: String, private val clips: List<Clip
         log.info("ClipSet '$name' disposed")
     }
 
-    private fun isRunning(): Boolean {
+    fun isRunning(): Boolean {
         return clips.any { clip ->
             clip.isRunning
         }

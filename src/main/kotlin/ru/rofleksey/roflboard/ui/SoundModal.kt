@@ -23,7 +23,7 @@ import java.io.File
 class SoundModal {
     companion object {
 
-        data class SoundResult(val name: String, val file: File, val type: SoundType, val keys: Int)
+        data class SoundResult(val name: String, val files: List<File>, val type: SoundType, val keys: Int)
 
         fun show(
             mainStage: Stage,
@@ -31,17 +31,9 @@ class SoundModal {
             soundInfo: SoundEntry?,
             callback: (newSound: SoundResult?) -> Unit
         ) {
-            var curFile = if (soundInfo != null) {
-                File(soundInfo.path)
-            } else {
-                null
-            }
+            var curFiles = soundInfo?.paths?.map { File(it) }
             var curKey = soundInfo?.key
             var recording = false
-
-            if (soundInfo != null) {
-                curFile = File(soundInfo.path)
-            }
 
             val modalStage = Stage()
             val modalRoot = StackPane()
@@ -56,7 +48,7 @@ class SoundModal {
 
             val typeObsList = FXCollections.observableArrayList(SoundType.FULL, SoundType.PRESSED, SoundType.TOGGLE)
 
-            val fileLabel = Label("Select file").apply {
+            val fileLabel = Label("Select files").apply {
                 textOverrun = OverrunStyle.LEADING_ELLIPSIS
             }
             val fileButton = Button("Select")
@@ -68,12 +60,12 @@ class SoundModal {
 
             fileButton.setOnAction {
                 val fileChooser = FileChooser()
-                fileChooser.title = "Select sound"
+                fileChooser.title = "Select sounds"
                 fileChooser.extensionFilters.addAll(FileChooser.ExtensionFilter("WAV", "*.wav"))
-                val file = fileChooser.showOpenDialog(modalStage)
-                if (file != null) {
+                val files: List<File>? = fileChooser.showOpenMultipleDialog(modalStage)
+                if (files != null) {
                     try {
-                        soundFacade.tryLoad(file)
+                        soundFacade.tryLoad(files)
                     } catch (e: Exception) {
                         Alert(Alert.AlertType.ERROR).apply {
                             headerText = "File open error"
@@ -82,9 +74,9 @@ class SoundModal {
                         }
                         return@setOnAction
                     }
-                    curFile = file
-                    fileLabel.text = file.name
-                    nameEdit.text = file.nameWithoutExtension
+                    curFiles = files
+                    fileLabel.text = files.joinToString(",") { it.name }
+                    nameEdit.text = files.joinToString(",") { it.nameWithoutExtension }
                 }
             }
 
@@ -138,7 +130,7 @@ class SoundModal {
             val submitButton = Button(submitButtonText)
             submitButton.setOnAction {
                 val newName = nameEdit.text.trim()
-                val newFile = curFile?.absoluteFile
+                val newFiles = curFiles?.map { it.absoluteFile }
                 val newType = typeComboBox.value
 
                 if (newName.isBlank()) {
@@ -149,7 +141,7 @@ class SoundModal {
                     return@setOnAction
                 }
 
-                if (newFile == null) {
+                if (newFiles == null) {
                     Alert(Alert.AlertType.WARNING).apply {
                         contentText = "File is not selected"
                         showAndWait()
@@ -165,7 +157,7 @@ class SoundModal {
                     return@setOnAction
                 }
 
-                val newSound = SoundResult(newName, newFile, newType, curKey!!)
+                val newSound = SoundResult(newName, newFiles, newType, curKey!!)
                 callback(newSound)
                 modalStage.close()
             }

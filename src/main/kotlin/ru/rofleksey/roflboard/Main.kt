@@ -23,7 +23,7 @@ import ru.rofleksey.roflboard.data.SoundEntryJson
 import ru.rofleksey.roflboard.keyboard.GlobalEventsManager
 import ru.rofleksey.roflboard.keyboard.KeyboardListener
 import ru.rofleksey.roflboard.keyboard.KeyboardUtils
-import ru.rofleksey.roflboard.sound.ClipSetFactory
+import ru.rofleksey.roflboard.sound.ClipSetRotationFactory
 import ru.rofleksey.roflboard.sound.SoundEngine
 import ru.rofleksey.roflboard.sound.SoundFacade
 import ru.rofleksey.roflboard.sound.SoundUtils
@@ -39,10 +39,10 @@ open class Main : Application() {
     private val appData = AppData()
     private val soundEngine = SoundEngine()
     private val soundController = ComplexController(listOf(KeyboardController(), NetworkController()))
-    private val clipSetFactory = ClipSetFactory()
+    private val clipSetRotationFactory = ClipSetRotationFactory()
     private val soundFacade = SoundFacade(
         soundEngine,
-        clipSetFactory,
+        clipSetRotationFactory,
         soundController,
         appData.getSoundEntryList(),
         appData.getActiveSoundBoardMixersList(),
@@ -197,7 +197,7 @@ open class Main : Application() {
 
         val soundsTab = Tab("SoundBoard", soundsRegion)
         val voiceTab = Tab("Voice", voiceRegion)
-//        val spamTab = Tab("Spam", Label("Not implemented yet"))
+        val spamTab = Tab("Spam", Label("Not implemented yet"))
 
         tabPane.tabs.addAll(soundsTab, voiceTab)
 
@@ -220,7 +220,8 @@ open class Main : Application() {
                 if (template == null) {
                     return@show
                 }
-                val newSound = SoundEntryJson(template.name, template.file.absolutePath, template.type, template.keys)
+                val newSound =
+                    SoundEntryJson(template.name, template.files.map { it.absolutePath }, template.type, template.keys)
                 appData.editSound(index, newSound)
             }
         }
@@ -254,7 +255,12 @@ open class Main : Application() {
                             return@show
                         }
                         val newSound =
-                            SoundEntryJson(template.name, template.file.absolutePath, template.type, template.keys)
+                            SoundEntryJson(
+                                template.name,
+                                template.files.map { it.absolutePath },
+                                template.type,
+                                template.keys
+                            )
                         appData.editSound(index, newSound)
                     }
                 }
@@ -303,7 +309,8 @@ open class Main : Application() {
                 if (template == null) {
                     return@show
                 }
-                val newSound = SoundEntryJson(template.name, template.file.absolutePath, template.type, template.keys)
+                val newSound =
+                    SoundEntryJson(template.name, template.files.map { it.absolutePath }, template.type, template.keys)
                 appData.addSound(newSound)
             }
         }

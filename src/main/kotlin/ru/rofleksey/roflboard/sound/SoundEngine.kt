@@ -2,41 +2,41 @@ package ru.rofleksey.roflboard.sound
 
 open class SoundEngine {
 
-    private val clipSetMap = HashMap<Int, ClipSet>()
+    private val clipSetRotationMap = HashMap<Int, ClipSetRotation>()
 
-    fun loadClipSet(id: Int, clipSet: ClipSet) {
-        clipSetMap[id] = clipSet
+    fun loadClipSet(id: Int, clipSetRotation: ClipSetRotation) {
+        clipSetRotationMap[id] = clipSetRotation
     }
 
     fun startSound(id: Int) {
-        clipSetMap[id]?.onStartPressed()
+        clipSetRotationMap[id]?.onStartPressed()
     }
 
     fun stopSound(id: Int) {
-        clipSetMap[id]?.onStopPressed()
+        clipSetRotationMap[id]?.onStopPressed()
     }
 
     fun stopAllSounds() {
-        clipSetMap.values.forEach { sound ->
-            sound.forceStop()
+        clipSetRotationMap.values.forEach { clipRotation ->
+            clipRotation.forceStop()
         }
     }
 
     fun setVolume(index: Int, volume: Float) {
-        clipSetMap.values.forEach { clipSet ->
-            clipSet.setVolume(index, volume)
+        clipSetRotationMap.values.forEach { clipRotation ->
+            clipRotation.setVolume(index, volume)
         }
     }
 
     fun unloadClipSet(key: Int) {
-        val clipSet = clipSetMap.remove(key)
+        val clipSet = clipSetRotationMap.remove(key)
         clipSet?.dispose()
     }
 
     fun unloadAll() {
-        clipSetMap.values.forEach { clipSet ->
-            clipSet.dispose()
+        clipSetRotationMap.values.forEach { clipRotation ->
+            clipRotation.dispose()
         }
-        clipSetMap.clear()
+        clipSetRotationMap.clear()
     }
 }

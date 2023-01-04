@@ -17,6 +17,7 @@ dependencies {
     testImplementation(kotlin("test"))
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
     implementation("com.github.kwhat:jnativehook:2.2.2")
+    implementation("net.jthink:jaudiotagger:3.0.1")
     implementation(files("lib/TarsosDSP-2.4.jar"))
 }
 

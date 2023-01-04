@@ -3,6 +3,7 @@ package ru.rofleksey.roflboard
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent
 import javafx.application.Application
 import javafx.application.Platform
+import javafx.beans.InvalidationListener
 import javafx.beans.property.ReadOnlyObjectProperty
 import javafx.geometry.Insets
 import javafx.geometry.Pos
@@ -25,10 +26,8 @@ import ru.rofleksey.roflboard.data.SoundEntryJson
 import ru.rofleksey.roflboard.keyboard.GlobalEventsManager
 import ru.rofleksey.roflboard.keyboard.KeyboardListener
 import ru.rofleksey.roflboard.keyboard.KeyboardUtils
-import ru.rofleksey.roflboard.sound.ClipSetRotationFactory
-import ru.rofleksey.roflboard.sound.SoundEngine
-import ru.rofleksey.roflboard.sound.SoundFacade
-import ru.rofleksey.roflboard.sound.SoundUtils
+import ru.rofleksey.roflboard.sound.*
+import ru.rofleksey.roflboard.sound.rules.SoundCheckAlert
 import ru.rofleksey.roflboard.ui.SoundModal
 import ru.rofleksey.roflboard.ui.SoundView
 import ru.rofleksey.roflboard.ui.UiImages
@@ -36,10 +35,18 @@ import ru.rofleksey.roflboard.utils.FileChooserBuilder
 import ru.rofleksey.roflboard.voice.VoiceEngine
 import java.awt.Desktop
 import java.net.URL
+import java.util.logging.Level
+import java.util.logging.Logger
 import kotlin.system.exitProcess
 
 
 open class Main : Application() {
+    companion object {
+        private val jAudioTaggerLogger = Logger.getLogger("org.jaudiotagger").apply {
+            level = Level.OFF
+        }
+    }
+
     private val appData = AppData()
     private val soundEngine = SoundEngine()
     private val soundController = ComplexController(listOf(KeyboardController(), NetworkController()))
@@ -63,9 +70,12 @@ open class Main : Application() {
     )
 
     private val soundBoardTable = TableView(appData.getSoundViewList())
+    private val alertList = SoundCheckService.INSTANCE.getAlertList()
+    private val alertIsChecking = SoundCheckService.INSTANCE.isChecking()
 
     override fun start(primaryStage: Stage) {
-        appData.updateAvailableMixers(SoundUtils.listOutputMixers())
+        appData.updateAvailableInputMixers(SoundUtils.listInputMixers())
+        appData.updateAvailableOutputMixers(SoundUtils.listOutputMixers())
         GlobalEventsManager.INSTANCE.init()
         soundController.register(soundEngine, voiceEngine, appData)
         soundFacade.init()
@@ -96,7 +106,7 @@ open class Main : Application() {
     }
 
     private fun initMenu(stage: Stage, root: BorderPane) {
-        val configMenu = Menu("Config").apply {
+        val fileMenu = Menu("File").apply {
             val newItem = MenuItem("New").apply {
                 accelerator = KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN)
             }
@@ -194,7 +204,7 @@ open class Main : Application() {
         helpMenu.items.addAll(aboutMenuItem, motivationMenuItem)
 
         val menuBar = MenuBar().apply {
-            menus.addAll(configMenu, helpMenu)
+            menus.addAll(fileMenu, helpMenu)
         }
 
         root.top = menuBar
@@ -334,6 +344,57 @@ open class Main : Application() {
             }
         }
 
+        val eyeButton = Button().apply {
+            graphic = ImageView(UiImages.EYE)
+        }
+        eyeButton.setOnAction {
+
+        }
+
+        val warningButton = Button().apply {
+            graphic = ImageView(UiImages.CHECK)
+            isDisable = true
+        }
+        val listener = Runnable {
+            if (alertIsChecking.get()) {
+                warningButton.isDisable = true
+                warningButton.graphic = ImageView(UiImages.REFRESH)
+            } else if (alertList.any { it.status == SoundCheckAlert.Status.ERROR }) {
+                warningButton.isDisable = false
+                warningButton.graphic = ImageView(UiImages.ALERT)
+            } else if (alertList.isNotEmpty()) {
+                warningButton.isDisable = false
+                warningButton.graphic = ImageView(UiImages.EXCLAMATION)
+            } else {
+                warningButton.isDisable = true
+                warningButton.graphic = ImageView(UiImages.CHECK)
+            }
+        }
+        alertIsChecking.addListener(InvalidationListener {
+            listener.run()
+        })
+        alertList.addListener(InvalidationListener {
+            listener.run()
+        })
+        warningButton.setOnAction {
+            val alert = Alert(AlertType.WARNING)
+            alert.title = "Warnings list"
+            alert.headerText = ""
+
+            val alertRoot = StackPane()
+            val textArea = TextArea(alertList.joinToString("\n\n") { "WARNING: ${it.message}" })
+            textArea.isEditable = false
+            textArea.isWrapText = true
+            textArea.maxWidth = Double.MAX_VALUE
+            textArea.maxHeight = Double.MAX_VALUE
+
+            alertRoot.children.addAll(textArea)
+
+            alert.dialogPane.content = alertRoot
+
+            alert.showAndWait()
+        }
+
         val reloadAllButton = Button("Reload all")
         reloadAllButton.setOnAction {
             soundFacade.reloadAll()
@@ -347,14 +408,21 @@ open class Main : Application() {
         val controlsSpacer = Region()
 
         HBox.setHgrow(controlsSpacer, Priority.ALWAYS)
-        tableControls.children.addAll(addButton, controlsSpacer, reloadAllButton, stopAllButton)
+        tableControls.children.addAll(
+            addButton,
+            eyeButton,
+            controlsSpacer,
+            warningButton,
+            reloadAllButton,
+            stopAllButton
+        )
 
         val mainMixerLabel = Label("First output (e.g. speakers)")
         val mainMixerHBox = HBox(5.0).apply {
             alignment = Pos.CENTER_LEFT
             //style = "-fx-background-color: grey;"
         }
-        val mainMixerComboBox = ComboBox(appData.getAvailableMixersList())
+        val mainMixerComboBox = ComboBox(appData.getAvailableOutputMixersList())
         mainMixerComboBox.selectionModel.selectedIndexProperty().addListener { _, _, newIndex ->
             if (newIndex.toInt() >= 0) {
                 appData.setMainMixer(newIndex.toInt())
@@ -367,7 +435,7 @@ open class Main : Application() {
             graphic = ImageView(UiImages.REFRESH)
         }
         refreshMixersButton.setOnAction {
-            appData.updateAvailableMixers(SoundUtils.listOutputMixers())
+            appData.updateAvailableOutputMixers(SoundUtils.listOutputMixers())
         }
         mainMixerComboBox.maxWidth = Double.MAX_VALUE
         HBox.setHgrow(mainMixerComboBox, Priority.ALWAYS)
@@ -376,11 +444,11 @@ open class Main : Application() {
         val mainVolumeSlider = Slider(0.0, 1.0, appData.getVolumeMain().get().toDouble())
         mainVolumeSlider.valueProperty().bindBidirectional(appData.getVolumeMain())
 
-        val secondaryMixerLabel = Label("Second output (e.g. Virtual Audio Cable Input)")
+        val secondaryMixerLabel = Label("Second output (e.g. VB-Audio Virtual Cable Input)")
         val secondaryMixerHBox = HBox(5.0).apply {
             alignment = Pos.CENTER_LEFT
         }
-        val secondaryMixerComboBox = ComboBox(appData.getAvailableMixersList())
+        val secondaryMixerComboBox = ComboBox(appData.getAvailableOutputMixersList())
         secondaryMixerComboBox.selectionModel.selectedIndexProperty().addListener { _, _, newIndex ->
             if (newIndex.toInt() >= 0) {
                 appData.setSecondaryMixer(newIndex.toInt())
@@ -448,7 +516,7 @@ open class Main : Application() {
 
         val voiceMixerLabel = Label("Main input (real mic)")
         val voiceMixerHBox = HBox(5.0)
-        val voiceMixerComboBox = ComboBox(appData.getAvailableMixersList())
+        val voiceMixerComboBox = ComboBox(appData.getAvailableInputMixersList())
         voiceMixerComboBox.selectionModel.selectedIndexProperty().addListener { _, _, newIndex ->
             if (newIndex.toInt() >= 0) {
                 appData.setVoiceMixer(newIndex.toInt())
@@ -461,7 +529,7 @@ open class Main : Application() {
             graphic = ImageView(UiImages.REFRESH)
         }
         refreshMixersButton.setOnAction {
-            appData.updateAvailableMixers(SoundUtils.listOutputMixers())
+            appData.updateAvailableInputMixers(SoundUtils.listInputMixers())
         }
         voiceMixerComboBox.maxWidth = Double.MAX_VALUE
         HBox.setHgrow(voiceMixerComboBox, Priority.ALWAYS)

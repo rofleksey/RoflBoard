@@ -5,7 +5,9 @@ import javafx.collections.ListChangeListener
 import javafx.collections.ObservableList
 import ru.rofleksey.roflboard.controller.Controller
 import ru.rofleksey.roflboard.data.SoundType
+import ru.rofleksey.roflboard.sound.rules.SoundCheckAlert
 import java.io.File
+import java.io.FileNotFoundException
 import java.util.logging.Logger
 import javax.sound.sampled.Mixer
 
@@ -36,21 +38,35 @@ class SoundFacade(
             soundEngine.loadClipSet(sound.id, clipSet)
             soundController.loadSound(sound)
             log.info("Sound '${sound.name}' loaded")
-        } catch (e: Exception) {
+        } catch (e: FileNotFoundException) {
+            SoundCheckService.INSTANCE.addManual(
+                SoundCheckAlert(
+                    "File not found for sound '${sound.name}', paths: ${
+                        sound.paths.joinToString(
+                            ";"
+                        ) { it }
+                    }", SoundCheckAlert.Status.ERROR
+                )
+            )
+        } catch (e: Throwable) {
             e.printStackTrace()
+            SoundCheckService.INSTANCE.addManual(
+                SoundCheckAlert(
+                    "Failed to load sound '${sound.name}': $e",
+                    SoundCheckAlert.Status.ERROR
+                )
+            )
         }
     }
 
     fun reloadAll() {
+        SoundCheckService.INSTANCE.clear()
         sounds.forEach { sound ->
             unload(sound)
             load(sound)
         }
+        SoundCheckService.INSTANCE.checkHeavy(sounds)
         log.info("Reloaded everything")
-    }
-
-    fun setVolume(index: Int, volume: Float) {
-        soundEngine.setVolume(index, volume)
     }
 
     fun tryLoad(files: List<File>) {

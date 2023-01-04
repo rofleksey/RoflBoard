@@ -8,6 +8,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import ru.rofleksey.roflboard.keyboard.KeyboardUtils
 import ru.rofleksey.roflboard.sound.MixerInfoCached
+import ru.rofleksey.roflboard.sound.SoundCheckService
 import ru.rofleksey.roflboard.sound.SoundEntry
 import ru.rofleksey.roflboard.ui.SoundView
 import ru.rofleksey.roflboard.voice.VoiceMixerParams
@@ -33,10 +34,13 @@ class AppData {
     private val volumeVoice = SimpleFloatProperty(1.0f)
 
     private val soundViewList = FXCollections.observableArrayList<SoundView>()
-    private val mixerObsList = FXCollections.observableArrayList<String>()
+    private val outputMixerObsList = FXCollections.observableArrayList<String>()
+    private val inputMixerObsList = FXCollections.observableArrayList<String>()
     private val soundEntryList = FXCollections.observableArrayList<SoundEntry>()
     private val activeSoundBoardMixersList = FXCollections.observableArrayList<Mixer.Info>()
-    private val availableMixersData = ArrayList<MixerInfoCached>()
+
+    private val availableOutputMixersData = ArrayList<MixerInfoCached>()
+    private val availableInputMixersData = ArrayList<MixerInfoCached>()
 
     private val voiceFeatureEnabled = SimpleBooleanProperty(false)
     private val voiceActive = SimpleBooleanProperty(false)
@@ -47,7 +51,12 @@ class AppData {
 
     fun getSoundViewList(): ObservableList<SoundView> = soundViewList
     fun getSoundEntryList(): ObservableList<SoundEntry> = FXCollections.unmodifiableObservableList(soundEntryList)
-    fun getAvailableMixersList(): ObservableList<String> = FXCollections.unmodifiableObservableList(mixerObsList)
+    fun getAvailableOutputMixersList(): ObservableList<String> =
+        FXCollections.unmodifiableObservableList(outputMixerObsList)
+
+    fun getAvailableInputMixersList(): ObservableList<String> =
+        FXCollections.unmodifiableObservableList(inputMixerObsList)
+
     fun getActiveSoundBoardMixersList(): ObservableList<Mixer.Info> =
         FXCollections.unmodifiableObservableList(activeSoundBoardMixersList)
 
@@ -66,15 +75,15 @@ class AppData {
     fun getVoicePitchFactor() = voicePitchFactor
     fun getVoiceHighPassFactor() = voiceHighPassFactor
 
-    private fun getMixerMain() = availableMixersData.find { info ->
+    private fun getMixerMain() = availableOutputMixersData.find { info ->
         info.name == mixerMainName
     }
 
-    private fun getMixerSecondary() = availableMixersData.find { info ->
+    private fun getMixerSecondary() = availableOutputMixersData.find { info ->
         info.name == mixerSecondaryName
     }
 
-    private fun getMixerVoice() = availableMixersData.find { info ->
+    private fun getMixerVoice() = availableInputMixersData.find { info ->
         info.name == mixerVoiceName
     }
 
@@ -106,40 +115,40 @@ class AppData {
     }
 
     fun setMainMixer(index: Int) {
-        if ((index < 0 && mixerMainName == null) || (index >= 0 && mixerMainName == availableMixersData[index].name)) {
+        if ((index < 0 && mixerMainName == null) || (index >= 0 && mixerMainName == availableOutputMixersData[index].name)) {
             return
         }
         updateConfigName(true)
         mixerMainName = if (index < 0) {
             null
         } else {
-            availableMixersData[index].name
+            availableOutputMixersData[index].name
         }
         updateActiveMixers()
     }
 
     fun setSecondaryMixer(index: Int) {
-        if ((index < 0 && mixerSecondaryName == null) || (index >= 0 && mixerSecondaryName == availableMixersData[index].name)) {
+        if ((index < 0 && mixerSecondaryName == null) || (index >= 0 && mixerSecondaryName == availableOutputMixersData[index].name)) {
             return
         }
         updateConfigName(true)
         mixerSecondaryName = if (index < 0) {
             null
         } else {
-            availableMixersData[index].name
+            availableOutputMixersData[index].name
         }
         updateActiveMixers()
     }
 
     fun setVoiceMixer(index: Int) {
-        if ((index < 0 && mixerVoiceName == null) || (index >= 0 && mixerVoiceName == availableMixersData[index].name)) {
+        if ((index < 0 && mixerVoiceName == null) || (index >= 0 && mixerVoiceName == availableInputMixersData[index].name)) {
             return
         }
         updateConfigName(true)
         mixerVoiceName = if (index < 0) {
             null
         } else {
-            availableMixersData[index].name
+            availableInputMixersData[index].name
         }
         updateActiveMixers()
     }
@@ -149,31 +158,22 @@ class AppData {
         voiceKey.set(key)
     }
 
-    fun updateAvailableMixers(mixers: List<MixerInfoCached>) {
-        val oldMixerMain = mixerMainName
-        val oldMixerSecondary = mixerSecondaryName
-        val oldMixerVoice = mixerVoiceName
-        availableMixersData.clear()
-        availableMixersData.addAll(mixers)
-        mixerObsList.clear()
-        mixers.forEach { info ->
-            mixerObsList.add(info.name)
-        }
-        if (mixerMainName != null && !availableMixersData.any { it.name == mixerMainName }) {
+    private fun updateAvailableMixersImpl(oldMixerMain: String?, oldMixerSecondary: String?, oldMixerVoice: String?) {
+        if (mixerMainName != null && !availableOutputMixersData.any { it.name == mixerMainName }) {
             mixerMainName = null
             mixerMainChange.set(null)
         } else {
             mixerMainChange.set(null)
             mixerMainChange.set(oldMixerMain)
         }
-        if (mixerSecondaryName != null && !availableMixersData.any { it.name == mixerSecondaryName }) {
+        if (mixerSecondaryName != null && !availableOutputMixersData.any { it.name == mixerSecondaryName }) {
             mixerSecondaryName = null
             mixerSecondaryChange.set(null)
         } else {
             mixerSecondaryChange.set(null)
             mixerSecondaryChange.set(oldMixerSecondary)
         }
-        if (mixerVoiceName != null && !availableMixersData.any { it.name == mixerVoiceName }) {
+        if (mixerVoiceName != null && !availableInputMixersData.any { it.name == mixerVoiceName }) {
             mixerVoiceName = null
             mixerVoiceChange.set(null)
         } else {
@@ -181,6 +181,32 @@ class AppData {
             mixerVoiceChange.set(oldMixerVoice)
         }
         updateActiveMixers()
+    }
+
+    fun updateAvailableOutputMixers(mixers: List<MixerInfoCached>) {
+        val oldMixerMain = mixerMainName
+        val oldMixerSecondary = mixerSecondaryName
+        val oldMixerVoice = mixerVoiceName
+        availableOutputMixersData.clear()
+        availableOutputMixersData.addAll(mixers)
+        outputMixerObsList.clear()
+        mixers.forEach { info ->
+            outputMixerObsList.add(info.name)
+        }
+        updateAvailableMixersImpl(oldMixerMain, oldMixerSecondary, oldMixerVoice)
+    }
+
+    fun updateAvailableInputMixers(mixers: List<MixerInfoCached>) {
+        val oldMixerMain = mixerMainName
+        val oldMixerSecondary = mixerSecondaryName
+        val oldMixerVoice = mixerVoiceName
+        availableInputMixersData.clear()
+        availableInputMixersData.addAll(mixers)
+        inputMixerObsList.clear()
+        mixers.forEach { info ->
+            inputMixerObsList.add(info.name)
+        }
+        updateAvailableMixersImpl(oldMixerMain, oldMixerSecondary, oldMixerVoice)
     }
 
     fun getSound(viewIndex: Int): SoundEntry {
@@ -191,6 +217,8 @@ class AppData {
     fun addSound(sound: SoundEntryJson) {
         updateConfigName(true)
         addSoundInternal(sound)
+        SoundCheckService.INSTANCE.clear()
+        SoundCheckService.INSTANCE.checkHeavy(soundEntryList)
     }
 
     private fun addSoundInternal(sound: SoundEntryJson) {
@@ -222,6 +250,9 @@ class AppData {
                 newRealSound.type.toString()
             )
         soundViewList[viewIndex] = soundView
+
+        SoundCheckService.INSTANCE.clear()
+        SoundCheckService.INSTANCE.checkHeavy(soundEntryList)
     }
 
     fun deleteSound(viewIndex: Int) {
@@ -229,6 +260,8 @@ class AppData {
         val soundView = soundViewList.removeAt(viewIndex)
         val realSoundIndex = soundEntryList.indexOfFirst { it.id == soundView.id }
         soundEntryList.removeAt(realSoundIndex)
+        SoundCheckService.INSTANCE.clear()
+        SoundCheckService.INSTANCE.checkHeavy(soundEntryList)
     }
 
     fun newConfig() {
@@ -237,6 +270,7 @@ class AppData {
 
         soundViewList.clear()
         soundEntryList.clear()
+        SoundCheckService.INSTANCE.clear()
     }
 
     fun save(file: File) {
@@ -286,7 +320,7 @@ class AppData {
         soundViewList.clear()
         soundEntryList.clear()
 
-        if (json.soundBoard.mixerMain == null || !availableMixersData.any { it.name == json.soundBoard.mixerMain.name }) {
+        if (json.soundBoard.mixerMain == null || !availableOutputMixersData.any { it.name == json.soundBoard.mixerMain.name }) {
             mixerMainName = null
             mixerMainChange.set(null)
         } else {
@@ -295,7 +329,7 @@ class AppData {
             mixerMainChange.set(json.soundBoard.mixerMain.name)
         }
 
-        if (json.soundBoard.mixerSecondary == null || !availableMixersData.any { it.name == json.soundBoard.mixerSecondary.name }) {
+        if (json.soundBoard.mixerSecondary == null || !availableOutputMixersData.any { it.name == json.soundBoard.mixerSecondary.name }) {
             mixerSecondaryName = null
             mixerSecondaryChange.set(null)
         } else {
@@ -304,7 +338,7 @@ class AppData {
             mixerSecondaryChange.set(json.soundBoard.mixerSecondary.name)
         }
 
-        if (json.voice.mixerInput == null || !availableMixersData.any { it.name == json.voice.mixerInput.name }) {
+        if (json.voice.mixerInput == null || !availableInputMixersData.any { it.name == json.voice.mixerInput.name }) {
             mixerVoiceName = null
             mixerVoiceChange.set(null)
         } else {
@@ -314,9 +348,11 @@ class AppData {
         }
         updateActiveMixers()
 
+        SoundCheckService.INSTANCE.clear()
         json.soundBoard.sounds.forEach { sound ->
             addSoundInternal(sound)
         }
+        SoundCheckService.INSTANCE.checkHeavy(soundEntryList)
 
         voiceFeatureEnabled.set(json.voice.enabled)
         voiceKey.set(json.voice.key)

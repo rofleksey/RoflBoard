@@ -142,7 +142,7 @@ class VoiceEngine(
         dispatcher!!.addAudioProcessor(player)
 
         task = executor.submit(dispatcher!!)
-        log.info("Voice engine started with mixers '${voiceMixerParams.get().mixerInput!!.name}' -> '${voiceMixerParams.get().mixerOutput!!.name}")
+        log.info("Voice engine started with mixers '${voiceMixerParams.get().mixerInput!!.name}' -> '${voiceMixerParams.get().mixerOutput!!.name}'")
     }
 
     private fun stop() {

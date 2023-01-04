@@ -32,7 +32,7 @@ class AppData {
     private val volumeSecondary = SimpleFloatProperty(1.0f)
     private val volumeVoice = SimpleFloatProperty(1.0f)
 
-    private val soundsObsList = FXCollections.observableArrayList<SoundView>()
+    private val soundViewList = FXCollections.observableArrayList<SoundView>()
     private val mixerObsList = FXCollections.observableArrayList<String>()
     private val soundEntryList = FXCollections.observableArrayList<SoundEntry>()
     private val activeSoundBoardMixersList = FXCollections.observableArrayList<Mixer.Info>()
@@ -45,7 +45,7 @@ class AppData {
     private var voicePitchFactor = SimpleFloatProperty(1.0f)
     private var voiceHighPassFactor = SimpleFloatProperty(0.0f)
 
-    fun getSoundViewList(): ObservableList<SoundView> = FXCollections.unmodifiableObservableList(soundsObsList)
+    fun getSoundViewList(): ObservableList<SoundView> = soundViewList
     fun getSoundEntryList(): ObservableList<SoundEntry> = FXCollections.unmodifiableObservableList(soundEntryList)
     fun getAvailableMixersList(): ObservableList<String> = FXCollections.unmodifiableObservableList(mixerObsList)
     fun getActiveSoundBoardMixersList(): ObservableList<Mixer.Info> =
@@ -183,7 +183,10 @@ class AppData {
         updateActiveMixers()
     }
 
-    fun getSound(index: Int): SoundEntry = soundEntryList[index]
+    fun getSound(viewIndex: Int): SoundEntry {
+        val soundView = soundViewList[viewIndex]
+        return soundEntryList.first { it.id == soundView.id }
+    }
 
     fun addSound(sound: SoundEntryJson) {
         updateConfigName(true)
@@ -196,39 +199,43 @@ class AppData {
         soundEntryList.add(actualSound)
 
         val uiSound = SoundView(
+            newId,
             actualSound.name,
             KeyboardUtils.getKeyText(actualSound.keys),
             actualSound.type.toString()
         )
-        soundsObsList.add(uiSound)
+        soundViewList.add(uiSound)
     }
 
-    fun editSound(index: Int, sound: SoundEntryJson) {
+    fun editSound(viewIndex: Int, sound: SoundEntryJson) {
         updateConfigName(true)
-        val oldSound = soundEntryList[index]
-        val actualSound = sound.toEntry(oldSound.id)
-        soundEntryList[index] = actualSound
+        var soundView = soundViewList[viewIndex]
+        val oldRealSoundIndex = soundEntryList.indexOfFirst { it.id == soundView.id }
+        val newRealSound = sound.toEntry(soundView.id)
+        soundEntryList[oldRealSoundIndex] = newRealSound
 
-        val uiSound =
+        soundView =
             SoundView(
-                actualSound.name,
-                KeyboardUtils.getKeyText(actualSound.keys),
-                actualSound.type.toString()
+                newRealSound.id,
+                newRealSound.name,
+                KeyboardUtils.getKeyText(newRealSound.keys),
+                newRealSound.type.toString()
             )
-        soundsObsList[index] = uiSound
+        soundViewList[viewIndex] = soundView
     }
 
-    fun deleteSound(index: Int) {
+    fun deleteSound(viewIndex: Int) {
         updateConfigName(true)
-        soundEntryList.removeAt(index)
-        soundsObsList.removeAt(index)
+        val soundView = soundViewList.removeAt(viewIndex)
+        val realSoundIndex = soundEntryList.indexOfFirst { it.id == soundView.id }
+        soundEntryList.removeAt(realSoundIndex)
     }
 
     fun newConfig() {
         configFile = null
         updateConfigName(false)
 
-        soundsObsList.clear()
+        soundViewList.clear()
         soundEntryList.clear()
     }
 
@@ -276,7 +283,7 @@ class AppData {
         val str = file.readText(charset = Charset.forName("UTF-8"))
         val json: ConfigJson = Json.decodeFromString(str)
 
-        soundsObsList.clear()
+        soundViewList.clear()
         soundEntryList.clear()
 
         if (json.soundBoard.mixerMain == null || !availableMixersData.any { it.name == json.soundBoard.mixerMain.name }) {

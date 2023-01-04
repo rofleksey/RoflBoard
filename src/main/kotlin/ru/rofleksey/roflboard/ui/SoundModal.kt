@@ -5,6 +5,7 @@ import javafx.collections.FXCollections
 import javafx.geometry.Insets
 import javafx.scene.Scene
 import javafx.scene.control.*
+import javafx.scene.image.ImageView
 import javafx.scene.layout.ColumnConstraints
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Priority
@@ -52,7 +53,9 @@ class SoundModal {
             val fileLabel = Label("Select files").apply {
                 textOverrun = OverrunStyle.LEADING_ELLIPSIS
             }
-            val fileButton = Button("Select")
+            val fileButton = Button().apply {
+                graphic = ImageView(UiImages.FILE)
+            }
 
             val nameLabel = Label("Name")
             val nameEdit = TextField().apply {
@@ -90,13 +93,15 @@ class SoundModal {
             val keysLabel = Label().apply {
                 text = KeyboardUtils.getDefaultKeyText(soundInfo?.keys, "Keys")
             }
-            val keysButton = Button("Record")
+            val keysButton = Button().apply {
+                graphic = ImageView(UiImages.KEYBOARD)
+            }
 
             val listener = object : KeyboardListener {
                 override fun afterKeyPressed(key: Int, curPressed: List<Int>) {
                     if (key == NativeKeyEvent.VC_ESCAPE) {
                         recording = false
-                        keysButton.text = "Record"
+                        keysButton.graphic = ImageView(UiImages.KEYBOARD)
                         GlobalEventsManager.INSTANCE.unregister(this)
                         curKeys = soundInfo?.keys
                         keysLabel.text = KeyboardUtils.getDefaultKeyText(curKeys, "Keys")
@@ -115,21 +120,23 @@ class SoundModal {
                 recording = !recording
                 if (recording) {
                     keysLabel.text = "Press any key"
-                    keysButton.text = "Stop"
+                    keysButton.graphic = ImageView(UiImages.KEYBOARD_OFF)
                     GlobalEventsManager.INSTANCE.register(listener)
                 } else {
                     keysLabel.text = KeyboardUtils.getDefaultKeyText(curKeys, "Keys")
-                    keysButton.text = "Record"
+                    keysButton.graphic = ImageView(UiImages.KEYBOARD)
                     GlobalEventsManager.INSTANCE.unregister(listener)
                 }
             }
 
-            val submitButtonText = if (soundInfo == null) {
-                "Add"
+            val submitButtonImage = if (soundInfo == null) {
+                UiImages.PLUS
             } else {
-                "Apply"
+                UiImages.CHECK
             }
-            val submitButton = Button(submitButtonText)
+            val submitButton = Button().apply {
+                graphic = ImageView(submitButtonImage)
+            }
             submitButton.setOnAction {
                 val newName = nameEdit.text.trim()
                 val newFiles = curFiles?.map { it.absoluteFile }
@@ -185,7 +192,7 @@ class SoundModal {
                 } else {
                     "Edit sound"
                 }
-                icons.add(UiUtils.LOGO)
+                icons.add(UiImages.LOGO)
                 isResizable = false
                 initModality(Modality.WINDOW_MODAL)
                 initOwner(mainStage)

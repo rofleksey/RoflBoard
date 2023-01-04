@@ -10,6 +10,7 @@ import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.control.Alert.AlertType
 import javafx.scene.control.cell.PropertyValueFactory
+import javafx.scene.image.ImageView
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCodeCombination
 import javafx.scene.input.KeyCombination
@@ -30,7 +31,7 @@ import ru.rofleksey.roflboard.sound.SoundFacade
 import ru.rofleksey.roflboard.sound.SoundUtils
 import ru.rofleksey.roflboard.ui.SoundModal
 import ru.rofleksey.roflboard.ui.SoundView
-import ru.rofleksey.roflboard.ui.UiUtils
+import ru.rofleksey.roflboard.ui.UiImages
 import ru.rofleksey.roflboard.utils.FileChooserBuilder
 import ru.rofleksey.roflboard.voice.VoiceEngine
 import java.awt.Desktop
@@ -61,8 +62,10 @@ open class Main : Application() {
         appData.getVoiceHighPassFactor()
     )
 
+    private val soundBoardTable = TableView(appData.getSoundViewList())
+
     override fun start(primaryStage: Stage) {
-        appData.updateAvailableMixers(SoundUtils.listMixers())
+        appData.updateAvailableMixers(SoundUtils.listOutputMixers())
         GlobalEventsManager.INSTANCE.init()
         soundController.register(soundEngine, voiceEngine, appData)
         soundFacade.init()
@@ -77,7 +80,7 @@ open class Main : Application() {
 
         primaryStage.apply {
             title = appData.getConfigName().get()
-            icons.add(UiUtils.LOGO)
+            icons.add(UiImages.LOGO)
             isResizable = false
             titleProperty().bind(appData.getConfigName())
             scene = mainScene
@@ -113,6 +116,7 @@ open class Main : Application() {
                 if (configFile != null) {
                     try {
                         appData.load(configFile)
+                        soundBoardTable.sort()
                     } catch (e: Exception) {
                         Alert(AlertType.ERROR).apply {
                             title = "Error loading config"
@@ -216,14 +220,14 @@ open class Main : Application() {
     private fun initSounds(stage: Stage): Region {
         val soundsRoot = BorderPane()
 
-        val table = TableView(appData.getSoundViewList()).apply {
+        soundBoardTable.apply {
             placeholder = Label("No sound clips added yet")
             setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY)
         }
 
         val editMenuItem = MenuItem("Edit")
         editMenuItem.setOnAction {
-            val index = table.selectionModel.selectedIndex
+            val index = soundBoardTable.selectionModel.selectedIndex
             val sound = appData.getSound(index)
             SoundModal.show(stage, soundFacade, sound) { template ->
                 if (template == null) {
@@ -232,12 +236,13 @@ open class Main : Application() {
                 val newSound =
                     SoundEntryJson(template.name, template.files.map { it.absolutePath }, template.type, template.keys)
                 appData.editSound(index, newSound)
+                soundBoardTable.sort()
             }
         }
 
         val deleteMenuItem = MenuItem("Delete")
         deleteMenuItem.setOnAction {
-            val index = table.selectionModel.selectedIndex
+            val index = soundBoardTable.selectionModel.selectedIndex
             val sound = appData.getSound(index)
             val alert = Alert(AlertType.CONFIRMATION)
             alert.title = "Delete sound"
@@ -246,14 +251,15 @@ open class Main : Application() {
             val result = alert.showAndWait()
             if (result.get() == ButtonType.OK) {
                 appData.deleteSound(index)
+                soundBoardTable.sort()
             }
         }
 
         val menu = ContextMenu()
         menu.items.addAll(editMenuItem, deleteMenuItem)
-        table.contextMenu = menu
+        soundBoardTable.contextMenu = menu
 
-        table.setRowFactory {
+        soundBoardTable.setRowFactory {
             val row = TableRow<SoundView>()
             row.setOnMouseClicked { event ->
                 if (event.clickCount == 2 && !row.isEmpty) {
@@ -271,6 +277,7 @@ open class Main : Application() {
                                 template.keys
                             )
                         appData.editSound(index, newSound)
+                        soundBoardTable.sort()
                     }
                 }
             }
@@ -279,29 +286,29 @@ open class Main : Application() {
 
         val nameCol = TableColumn<SoundView, String>("Sound Clip").apply {
             cellValueFactory = PropertyValueFactory("name")
-            isSortable = false
-            isReorderable = false
+            isSortable = true
+            isReorderable = true
         }
 
         val keyCol = TableColumn<SoundView, String>("Key Map").apply {
             cellValueFactory = PropertyValueFactory("keys")
-            isSortable = false
-            isReorderable = false
+            isSortable = true
+            isReorderable = true
         }
 
         val typeCol = TableColumn<SoundView, String>("Type").apply {
             cellValueFactory = PropertyValueFactory("type")
-            isSortable = false
-            isReorderable = false
+            isSortable = true
+            isReorderable = true
         }
 
-        table.columns.addAll(nameCol, keyCol, typeCol)
+        soundBoardTable.columns.addAll(nameCol, keyCol, typeCol)
 
-        soundsRoot.center = table
+        soundsRoot.center = soundBoardTable
 
         val controlsRoot = initSoundControls(stage, soundsRoot)
 
-        BorderPane.setMargin(table, Insets(8.0, 8.0, 8.0, 8.0))
+        BorderPane.setMargin(soundBoardTable, Insets(8.0, 8.0, 8.0, 8.0))
         BorderPane.setMargin(controlsRoot, Insets(0.0, 8.0, 8.0, 8.0))
 
         return soundsRoot
@@ -312,7 +319,9 @@ open class Main : Application() {
 
         val tableControls = HBox(5.0)
 
-        val addButton = Button("Add")
+        val addButton = Button().apply {
+            graphic = ImageView(UiImages.PLUS)
+        }
         addButton.setOnAction {
             SoundModal.show(stage, soundFacade, null) { template ->
                 if (template == null) {
@@ -321,6 +330,7 @@ open class Main : Application() {
                 val newSound =
                     SoundEntryJson(template.name, template.files.map { it.absolutePath }, template.type, template.keys)
                 appData.addSound(newSound)
+                soundBoardTable.sort()
             }
         }
 
@@ -353,9 +363,11 @@ open class Main : Application() {
         appData.getMixerMainChange().addListener { _, _, mixerMain ->
             mainMixerComboBox.selectionModel.select(mixerMain)
         }
-        val refreshMixersButton = Button("Refresh")
+        val refreshMixersButton = Button().apply {
+            graphic = ImageView(UiImages.REFRESH)
+        }
         refreshMixersButton.setOnAction {
-            appData.updateAvailableMixers(SoundUtils.listMixers())
+            appData.updateAvailableMixers(SoundUtils.listOutputMixers())
         }
         mainMixerComboBox.maxWidth = Double.MAX_VALUE
         HBox.setHgrow(mainMixerComboBox, Priority.ALWAYS)
@@ -415,7 +427,7 @@ open class Main : Application() {
         return controlsRoot
     }
 
-    fun initVoice(stage: Stage, tabProperty: ReadOnlyObjectProperty<Tab>): Region {
+    private fun initVoice(stage: Stage, tabProperty: ReadOnlyObjectProperty<Tab>): Region {
         var recording = false
 
         val voiceRoot = StackPane()
@@ -445,9 +457,11 @@ open class Main : Application() {
         appData.getMixerVoiceChange().addListener { _, _, mixerVoice ->
             voiceMixerComboBox.selectionModel.select(mixerVoice)
         }
-        val refreshMixersButton = Button("Refresh")
+        val refreshMixersButton = Button().apply {
+            graphic = ImageView(UiImages.REFRESH)
+        }
         refreshMixersButton.setOnAction {
-            appData.updateAvailableMixers(SoundUtils.listMixers())
+            appData.updateAvailableMixers(SoundUtils.listOutputMixers())
         }
         voiceMixerComboBox.maxWidth = Double.MAX_VALUE
         HBox.setHgrow(voiceMixerComboBox, Priority.ALWAYS)
@@ -460,12 +474,14 @@ open class Main : Application() {
         appData.getVoiceKey().addListener { _, _, key ->
             voiceKeyLabel.text = KeyboardUtils.getDefaultKeyText(key, "Key")
         }
-        val voiceKeyButton = Button("Record")
+        val voiceKeyButton = Button().apply {
+            graphic = ImageView(UiImages.KEYBOARD)
+        }
 
         val listener = object : KeyboardListener {
             override fun afterKeyPressed(key: Int, curPressed: List<Int>) {
                 recording = false
-                voiceKeyButton.text = "Record"
+                voiceKeyButton.graphic = ImageView(UiImages.KEYBOARD)
                 GlobalEventsManager.INSTANCE.unregister(this)
                 if (key == NativeKeyEvent.VC_ESCAPE) {
                     voiceKeyLabel.text = KeyboardUtils.getDefaultKeyText(appData.getVoiceKey().get(), "Key")
@@ -482,16 +498,16 @@ open class Main : Application() {
             recording = !recording
             if (recording) {
                 voiceKeyLabel.text = "Press any key"
-                voiceKeyButton.text = "Apply"
+                voiceKeyButton.graphic = ImageView(UiImages.CHECK)
                 GlobalEventsManager.INSTANCE.register(listener)
                 tabProperty.addListener { _, _, _ ->
                     recording = false
-                    voiceKeyButton.text = "Record"
+                    voiceKeyButton.graphic = ImageView(UiImages.KEYBOARD)
                     voiceKeyLabel.text = KeyboardUtils.getDefaultKeyText(appData.getVoiceKey().get(), "Key")
                     GlobalEventsManager.INSTANCE.unregister(listener)
                 }
             } else {
-                voiceKeyButton.text = "Record"
+                voiceKeyButton.graphic = ImageView(UiImages.KEYBOARD)
                 voiceKeyLabel.text = KeyboardUtils.getDefaultKeyText(appData.getVoiceKey().get(), "Key")
                 GlobalEventsManager.INSTANCE.unregister(listener)
             }

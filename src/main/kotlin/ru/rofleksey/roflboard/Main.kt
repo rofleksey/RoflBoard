@@ -2,6 +2,7 @@ package ru.rofleksey.roflboard
 
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent
 import javafx.application.Application
+import javafx.application.Platform
 import javafx.beans.property.ReadOnlyObjectProperty
 import javafx.geometry.Insets
 import javafx.geometry.Pos
@@ -30,9 +31,11 @@ import ru.rofleksey.roflboard.sound.SoundUtils
 import ru.rofleksey.roflboard.ui.SoundModal
 import ru.rofleksey.roflboard.ui.SoundView
 import ru.rofleksey.roflboard.ui.UiUtils
+import ru.rofleksey.roflboard.utils.FileChooserBuilder
 import ru.rofleksey.roflboard.voice.VoiceEngine
 import java.awt.Desktop
 import java.net.URL
+import kotlin.system.exitProcess
 
 
 open class Main : Application() {
@@ -81,6 +84,9 @@ open class Main : Application() {
             setOnHiding {
                 GlobalEventsManager.INSTANCE.dispose()
                 voiceEngine.dispose()
+                Platform.runLater {
+                    exitProcess(0)
+                }
             }
             show()
         }
@@ -99,10 +105,11 @@ open class Main : Application() {
                 accelerator = KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN)
             }
             loadItem.setOnAction {
-                val fileChooser = FileChooser()
-                fileChooser.title = "Open config"
-                fileChooser.extensionFilters.addAll(FileChooser.ExtensionFilter("JSON", "*.json"))
-                val configFile = fileChooser.showOpenDialog(stage)
+                val configFile = FileChooserBuilder
+                    .new("config")
+                    .setTitle("Open config")
+                    .addExtensionFilters(FileChooser.ExtensionFilter("JSON", "*.json"))
+                    .showOpenDialog(stage)
                 if (configFile != null) {
                     try {
                         appData.load(configFile)
@@ -122,10 +129,11 @@ open class Main : Application() {
             saveItem.setOnAction {
                 var outputFile = appData.getConfigFile()
                 if (outputFile == null) {
-                    val fileChooser = FileChooser()
-                    fileChooser.title = "Save config"
-                    fileChooser.extensionFilters.addAll(FileChooser.ExtensionFilter("JSON", "*.json"))
-                    outputFile = fileChooser.showSaveDialog(stage)
+                    outputFile = FileChooserBuilder
+                        .new("config")
+                        .setTitle("Save config")
+                        .addExtensionFilters(FileChooser.ExtensionFilter("JSON", "*.json"))
+                        .showSaveDialog(stage)
                 }
                 if (outputFile != null) {
                     try {
@@ -144,10 +152,11 @@ open class Main : Application() {
                 accelerator = KeyCombination.keyCombination("CTRL+SHIFT+S")
             }
             saveAsItem.setOnAction {
-                val fileChooser = FileChooser()
-                fileChooser.title = "Save config"
-                fileChooser.extensionFilters.addAll(FileChooser.ExtensionFilter("JSON", "*.json"))
-                val outputFile = fileChooser.showSaveDialog(stage)
+                val outputFile = FileChooserBuilder
+                    .new("config")
+                    .setTitle("Save config")
+                    .addExtensionFilters(FileChooser.ExtensionFilter("JSON", "*.json"))
+                    .showSaveDialog(stage)
                 if (outputFile != null) {
                     try {
                         appData.save(outputFile)
@@ -315,6 +324,11 @@ open class Main : Application() {
             }
         }
 
+        val reloadAllButton = Button("Reload all")
+        reloadAllButton.setOnAction {
+            soundFacade.reloadAll()
+        }
+
         val stopAllButton = Button("Stop all")
         stopAllButton.setOnAction {
             soundEngine.stopAllSounds()
@@ -323,7 +337,7 @@ open class Main : Application() {
         val controlsSpacer = Region()
 
         HBox.setHgrow(controlsSpacer, Priority.ALWAYS)
-        tableControls.children.addAll(addButton, controlsSpacer, stopAllButton)
+        tableControls.children.addAll(addButton, controlsSpacer, reloadAllButton, stopAllButton)
 
         val mainMixerLabel = Label("First output (e.g. speakers)")
         val mainMixerHBox = HBox(5.0).apply {
@@ -449,7 +463,7 @@ open class Main : Application() {
         val voiceKeyButton = Button("Record")
 
         val listener = object : KeyboardListener {
-            override fun onKeyPressed(key: Int) {
+            override fun afterKeyPressed(key: Int, curPressed: List<Int>) {
                 recording = false
                 voiceKeyButton.text = "Record"
                 GlobalEventsManager.INSTANCE.unregister(this)
@@ -460,7 +474,7 @@ open class Main : Application() {
                 appData.setVoiceKey(key)
             }
 
-            override fun onKeyReleased(key: Int) {
+            override fun beforeKeyReleased(key: Int, curPressed: List<Int>) {
 
             }
         }

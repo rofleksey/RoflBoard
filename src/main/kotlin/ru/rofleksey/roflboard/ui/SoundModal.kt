@@ -18,12 +18,13 @@ import ru.rofleksey.roflboard.keyboard.KeyboardListener
 import ru.rofleksey.roflboard.keyboard.KeyboardUtils
 import ru.rofleksey.roflboard.sound.SoundEntry
 import ru.rofleksey.roflboard.sound.SoundFacade
+import ru.rofleksey.roflboard.utils.FileChooserBuilder
 import java.io.File
 
 class SoundModal {
     companion object {
 
-        data class SoundResult(val name: String, val files: List<File>, val type: SoundType, val keys: Int)
+        data class SoundResult(val name: String, val files: List<File>, val type: SoundType, val keys: List<Int>)
 
         fun show(
             mainStage: Stage,
@@ -32,7 +33,7 @@ class SoundModal {
             callback: (newSound: SoundResult?) -> Unit
         ) {
             var curFiles = soundInfo?.paths?.map { File(it) }
-            var curKey = soundInfo?.key
+            var curKeys = soundInfo?.keys
             var recording = false
 
             val modalStage = Stage()
@@ -59,10 +60,11 @@ class SoundModal {
             }
 
             fileButton.setOnAction {
-                val fileChooser = FileChooser()
-                fileChooser.title = "Select sounds"
-                fileChooser.extensionFilters.addAll(FileChooser.ExtensionFilter("WAV", "*.wav"))
-                val files: List<File>? = fileChooser.showOpenMultipleDialog(modalStage)
+                val files = FileChooserBuilder
+                    .new("sound")
+                    .setTitle("Select sounds")
+                    .addExtensionFilters(FileChooser.ExtensionFilter("WAV", "*.wav"))
+                    .showOpenMultipleDialog(modalStage)
                 if (files != null) {
                     try {
                         soundFacade.tryLoad(files)
@@ -85,39 +87,39 @@ class SoundModal {
                 selectionModel.select(soundInfo?.type ?: SoundType.FULL)
             }
 
-            val keyLabel = Label().apply {
-                text = KeyboardUtils.getDefaultKeyText(soundInfo?.key, "Key")
+            val keysLabel = Label().apply {
+                text = KeyboardUtils.getDefaultKeyText(soundInfo?.keys, "Keys")
             }
-            val keyButton = Button("Record")
+            val keysButton = Button("Record")
 
             val listener = object : KeyboardListener {
-                override fun onKeyPressed(key: Int) {
-                    recording = false
-                    keyButton.text = "Record"
-                    GlobalEventsManager.INSTANCE.unregister(this)
+                override fun afterKeyPressed(key: Int, curPressed: List<Int>) {
                     if (key == NativeKeyEvent.VC_ESCAPE) {
-                        curKey = soundInfo?.key
-                        keyLabel.text = KeyboardUtils.getDefaultKeyText(curKey, "Key")
+                        recording = false
+                        keysButton.text = "Record"
+                        GlobalEventsManager.INSTANCE.unregister(this)
+                        curKeys = soundInfo?.keys
+                        keysLabel.text = KeyboardUtils.getDefaultKeyText(curKeys, "Keys")
                         return
                     }
-                    curKey = key
-                    keyLabel.text = KeyboardUtils.getDefaultKeyText(curKey, "Key")
+                    curKeys = ArrayList(curPressed)
+                    keysLabel.text = KeyboardUtils.getDefaultKeyText(curKeys, "Keys")
                 }
 
-                override fun onKeyReleased(key: Int) {
+                override fun beforeKeyReleased(key: Int, curPressed: List<Int>) {
 
                 }
             }
 
-            keyButton.setOnAction {
+            keysButton.setOnAction {
                 recording = !recording
                 if (recording) {
-                    keyLabel.text = "Press any key"
-                    keyButton.text = "Stop"
+                    keysLabel.text = "Press any key"
+                    keysButton.text = "Stop"
                     GlobalEventsManager.INSTANCE.register(listener)
                 } else {
-                    keyLabel.text = KeyboardUtils.getDefaultKeyText(curKey, "Key")
-                    keyButton.text = "Record"
+                    keysLabel.text = KeyboardUtils.getDefaultKeyText(curKeys, "Keys")
+                    keysButton.text = "Record"
                     GlobalEventsManager.INSTANCE.unregister(listener)
                 }
             }
@@ -149,7 +151,7 @@ class SoundModal {
                     return@setOnAction
                 }
 
-                if (curKey == null) {
+                if (curKeys == null) {
                     Alert(Alert.AlertType.WARNING).apply {
                         contentText = "Keys are not recorded"
                         showAndWait()
@@ -157,7 +159,7 @@ class SoundModal {
                     return@setOnAction
                 }
 
-                val newSound = SoundResult(newName, newFiles, newType, curKey!!)
+                val newSound = SoundResult(newName, newFiles, newType, curKeys!!)
                 callback(newSound)
                 modalStage.close()
             }
@@ -168,8 +170,8 @@ class SoundModal {
             modalContent.add(nameEdit, 1, 1)
             modalContent.add(typeLabel, 0, 2)
             modalContent.add(typeComboBox, 1, 2)
-            modalContent.add(keyLabel, 0, 3)
-            modalContent.add(keyButton, 1, 3)
+            modalContent.add(keysLabel, 0, 3)
+            modalContent.add(keysButton, 1, 3)
             modalContent.add(submitButton, 1, 4)
 
             modalRoot.children.add(modalContent)

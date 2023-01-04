@@ -19,7 +19,7 @@ class GlobalEventsManager private constructor() : NativeKeyListener {
     }
 
     private val listeners = ArrayList<KeyboardListener>()
-    private val keysPressed = LinkedHashSet<Int>()
+    private val keysPressed = ArrayList<Int>()
 
     fun init() {
         try {
@@ -38,11 +38,14 @@ class GlobalEventsManager private constructor() : NativeKeyListener {
             GlobalScreen.unregisterNativeHook()
         })
         GlobalScreen.addNativeKeyListener(object : NativeKeyListener {
+
             override fun nativeKeyPressed(event: NativeKeyEvent) {
                 Platform.runLater {
-                    keysPressed.add(event.keyCode)
+                    if (!keysPressed.contains(event.keyCode)) {
+                        keysPressed.add(event.keyCode)
+                    }
                     listeners.forEach { listener ->
-                        listener.onKeyPressed(event.keyCode)
+                        listener.afterKeyPressed(event.keyCode, keysPressed)
                     }
                 }
             }
@@ -50,7 +53,7 @@ class GlobalEventsManager private constructor() : NativeKeyListener {
             override fun nativeKeyReleased(event: NativeKeyEvent) {
                 Platform.runLater {
                     listeners.forEach { listener ->
-                        listener.onKeyReleased(event.keyCode)
+                        listener.beforeKeyReleased(event.keyCode, keysPressed)
                     }
                     keysPressed.remove(event.keyCode)
                 }

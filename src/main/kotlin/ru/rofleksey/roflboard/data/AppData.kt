@@ -197,7 +197,7 @@ class AppData {
 
         val uiSound = SoundView(
             actualSound.name,
-            KeyboardUtils.getKeyText(actualSound.key),
+            KeyboardUtils.getKeyText(actualSound.keys),
             actualSound.type.toString()
         )
         soundsObsList.add(uiSound)
@@ -212,7 +212,7 @@ class AppData {
         val uiSound =
             SoundView(
                 actualSound.name,
-                KeyboardUtils.getKeyText(actualSound.key),
+                KeyboardUtils.getKeyText(actualSound.keys),
                 actualSound.type.toString()
             )
         soundsObsList[index] = uiSound

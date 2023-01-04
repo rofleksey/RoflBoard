@@ -8,30 +8,52 @@ import ru.rofleksey.roflboard.keyboard.KeyboardListener
 import ru.rofleksey.roflboard.sound.SoundEngine
 import ru.rofleksey.roflboard.sound.SoundEntry
 import ru.rofleksey.roflboard.voice.VoiceEngine
-import java.util.concurrent.ConcurrentHashMap
 
 class KeyboardController : Controller {
-    private val soundMap = ConcurrentHashMap<Int, Int>()
+    companion object {
+        private data class SoundLink(val soundId: Int, val keys: List<Int>, var isPressed: Boolean)
+    }
+
+    private val soundMap = ArrayList<SoundLink>()
     private lateinit var soundEngine: SoundEngine
     private lateinit var voiceEngine: VoiceEngine
     private lateinit var voiceKeys: ReadOnlyObjectProperty<Int?>
     private lateinit var voiceActive: SimpleBooleanProperty
 
     private val keyboardListener = object : KeyboardListener {
-        override fun onKeyPressed(key: Int) {
-            val id = soundMap[key]
-            if (id != null) {
-                soundEngine.startSound(id)
+        override fun afterKeyPressed(key: Int, curPressed: List<Int>) {
+            var maxLinks: MutableList<SoundLink> = mutableListOf()
+            var maxScore = 0
+            soundMap.forEach { link ->
+                if (curPressed.containsAll(link.keys)) {
+                    if (link.keys.size > maxScore) {
+                        maxLinks = mutableListOf(link)
+                        maxScore = link.keys.size
+                    } else if (link.keys.size == maxScore) {
+                        maxLinks.add(link)
+                    }
+                }
+            }
+            val bestLinks = maxLinks
+            bestLinks.forEach { link ->
+                if (!link.isPressed) {
+                    link.isPressed = true
+                    soundEngine.startSound(link.soundId)
+                }
             }
             if (key == voiceKeys.get()) {
                 voiceActive.set(true)
             }
         }
 
-        override fun onKeyReleased(key: Int) {
-            val id = soundMap[key]
-            if (id != null) {
-                soundEngine.stopSound(id)
+        override fun beforeKeyReleased(key: Int, curPressed: List<Int>) {
+            soundMap.forEach { link ->
+                if (link.isPressed) {
+                    if (link.keys.contains(key)) {
+                        link.isPressed = false
+                        soundEngine.stopSound(link.soundId)
+                    }
+                }
             }
             if (key == voiceKeys.get()) {
                 voiceActive.set(false)
@@ -52,10 +74,10 @@ class KeyboardController : Controller {
     }
 
     override fun loadSound(sound: SoundEntry) {
-        soundMap[sound.key] = sound.id
+        soundMap.add(SoundLink(sound.id, sound.keys, false))
     }
 
     override fun unloadSound(sound: SoundEntry) {
-        soundMap.remove(sound.key)
+        soundMap.removeIf { it.soundId == sound.id }
     }
 }

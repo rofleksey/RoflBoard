@@ -41,7 +41,7 @@ class SoundFacade(
         }
     }
 
-    private fun reloadAll() {
+    fun reloadAll() {
         sounds.forEach { sound ->
             unload(sound)
             load(sound)

@@ -1,6 +1,6 @@
 package ru.rofleksey.roflboard.keyboard
 
 interface KeyboardListener {
-    fun onKeyPressed(key: Int)
-    fun onKeyReleased(key: Int)
+    fun afterKeyPressed(key: Int, curPressed: List<Int>)
+    fun beforeKeyReleased(key: Int, curPressed: List<Int>)
 }

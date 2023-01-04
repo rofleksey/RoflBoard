@@ -2,6 +2,7 @@ package ru.rofleksey.roflboard.sound
 
 import ru.rofleksey.roflboard.data.SoundType
 import java.util.logging.Logger
+import kotlin.random.Random
 
 
 class ClipSetRotation constructor(
@@ -13,7 +14,7 @@ class ClipSetRotation constructor(
         private var log: Logger = Logger.getLogger(SoundEngine::class.java.name)
     }
 
-    private var curIndex = 0
+    private var curIndex = (clipSets.size * Random.nextFloat()).toInt() % clipSets.size
 
     fun setVolume(index: Int, volume: Float) {
         clipSets.forEach { clipSet ->
@@ -22,7 +23,10 @@ class ClipSetRotation constructor(
     }
 
     private fun selectNext() {
-        curIndex = (curIndex + 1) % clipSets.size
+        if (clipSets.size == 1) {
+            return
+        }
+        curIndex = (curIndex + 1 + ((clipSets.size - 1) * Random.nextFloat()).toInt()) % clipSets.size
     }
 
     fun onStartPressed() {

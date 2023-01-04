@@ -196,7 +196,7 @@ open class Main : Application() {
         val motivationMenuItem = MenuItem("Motivation")
         motivationMenuItem.setOnAction {
             try {
-                Desktop.getDesktop().browse(URL("https://youtu.be/NOZONW-UK0w?t=23").toURI())
+                Desktop.getDesktop().browse(URL("https://youtu.be/NOZONW-UK0w?t=24").toURI())
             } catch (e: java.lang.Exception) {
                 e.printStackTrace()
             }

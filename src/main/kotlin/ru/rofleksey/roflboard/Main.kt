@@ -22,6 +22,7 @@ import ru.rofleksey.roflboard.controller.ComplexController
 import ru.rofleksey.roflboard.controller.KeyboardController
 import ru.rofleksey.roflboard.controller.NetworkController
 import ru.rofleksey.roflboard.data.AppData
+import ru.rofleksey.roflboard.data.KeyPressed
 import ru.rofleksey.roflboard.data.SoundEntryJson
 import ru.rofleksey.roflboard.keyboard.GlobalEventsManager
 import ru.rofleksey.roflboard.keyboard.KeyboardListener
@@ -91,7 +92,6 @@ open class Main : Application() {
         primaryStage.apply {
             title = appData.getConfigName().get()
             icons.add(UiImages.LOGO)
-            isResizable = false
             titleProperty().bind(appData.getConfigName())
             scene = mainScene
             setOnHiding {
@@ -547,18 +547,18 @@ open class Main : Application() {
         }
 
         val listener = object : KeyboardListener {
-            override fun afterKeyPressed(key: Int, curPressed: List<Int>) {
+            override fun afterKeyPressed(key: KeyPressed, curPressed: List<KeyPressed>) {
                 recording = false
                 voiceKeyButton.graphic = ImageView(UiImages.KEYBOARD)
                 GlobalEventsManager.INSTANCE.unregister(this)
-                if (key == NativeKeyEvent.VC_ESCAPE) {
+                if (key.code == NativeKeyEvent.VC_ESCAPE) {
                     voiceKeyLabel.text = KeyboardUtils.getDefaultKeyText(appData.getVoiceKey().get(), "Key")
                     return
                 }
                 appData.setVoiceKey(key)
             }
 
-            override fun beforeKeyReleased(key: Int, curPressed: List<Int>) {
+            override fun beforeKeyReleased(key: KeyPressed, curPressed: List<KeyPressed>) {
 
             }
         }

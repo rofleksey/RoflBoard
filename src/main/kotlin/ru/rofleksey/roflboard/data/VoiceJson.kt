@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class VoiceJson(
     val enabled: Boolean,
     val mixerInput: MixerJson?,
-    val key: Int?,
+    val key: KeyPressed?,
     val pitchFactor: Float,
     val highPassFactor: Float,
 )

@@ -1,48 +1,34 @@
 package ru.rofleksey.roflboard.keyboard
 
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent
+import ru.rofleksey.roflboard.data.KeyPressed
 
 class KeyboardUtils {
     companion object {
-        fun getKeyText(code: Int): String {
-            val text = NativeKeyEvent.getKeyText(code)
+        fun getKeyText(key: KeyPressed): String {
+            val text = NativeKeyEvent.getKeyText(key.code)
             if (text.contains("keyCode")) {
-                return "($code)"
+                return "(${key.code})"
             }
             return text
         }
 
-        fun getKeyText(codes: List<Int>): String {
-            return codes.joinToString("+") { getKeyText(it) }
+        fun getKeyText(keys: List<KeyPressed>): String {
+            return keys.joinToString("+") { getKeyText(it) }
         }
 
-        fun getDefaultKeyText(code: Int?, defaultText: String): String {
-            if (code == null) {
+        fun getDefaultKeyText(key: KeyPressed?, defaultText: String): String {
+            if (key == null) {
                 return defaultText
             }
-            return getKeyText(code)
+            return getKeyText(key)
         }
 
-        fun getDefaultKeyText(codes: List<Int>?, defaultText: String): String {
-            if (codes == null) {
+        fun getDefaultKeyText(keys: List<KeyPressed>?, defaultText: String): String {
+            if (keys == null) {
                 return defaultText
             }
-            return getKeyText(codes)
+            return getKeyText(keys)
         }
-
-//        fun isCombinationPressed(combination: List<Int>, curPressed: List<Int>): Boolean {
-//            if (combination.isEmpty()) {
-//                return false
-//            }
-//            var pointer = 0
-//            curPressed.forEach { c ->
-//                if (c == combination[pointer]) {
-//                    if (++pointer == combination.size) {
-//                        return true
-//                    }
-//                }
-//            }
-//            return false
-//        }
     }
 }

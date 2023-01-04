@@ -44,7 +44,7 @@ class AppData {
 
     private val voiceFeatureEnabled = SimpleBooleanProperty(false)
     private val voiceActive = SimpleBooleanProperty(false)
-    private var voiceKey = ReadOnlyObjectWrapper<Int?>(null)
+    private var voiceKey = ReadOnlyObjectWrapper<KeyPressed?>(null)
     private var voiceMixerParams = ReadOnlyObjectWrapper(VoiceMixerParams(null, null))
     private var voicePitchFactor = SimpleFloatProperty(1.0f)
     private var voiceHighPassFactor = SimpleFloatProperty(0.0f)
@@ -70,7 +70,7 @@ class AppData {
     fun getVolumeVoice() = volumeVoice
     fun getVoiceFeatureEnabled() = voiceFeatureEnabled
     fun getVoiceActive() = voiceActive
-    fun getVoiceKey(): ReadOnlyObjectProperty<Int?> = voiceKey.readOnlyProperty
+    fun getVoiceKey(): ReadOnlyObjectProperty<KeyPressed?> = voiceKey.readOnlyProperty
     fun getVoiceMixerParams(): ReadOnlyObjectProperty<VoiceMixerParams> = voiceMixerParams.readOnlyProperty
     fun getVoicePitchFactor() = voicePitchFactor
     fun getVoiceHighPassFactor() = voiceHighPassFactor
@@ -153,7 +153,7 @@ class AppData {
         updateActiveMixers()
     }
 
-    fun setVoiceKey(key: Int) {
+    fun setVoiceKey(key: KeyPressed) {
         updateConfigName(true)
         voiceKey.set(key)
     }

@@ -13,6 +13,7 @@ import javafx.scene.layout.StackPane
 import javafx.stage.FileChooser
 import javafx.stage.Modality
 import javafx.stage.Stage
+import ru.rofleksey.roflboard.data.KeyPressed
 import ru.rofleksey.roflboard.data.SoundType
 import ru.rofleksey.roflboard.keyboard.GlobalEventsManager
 import ru.rofleksey.roflboard.keyboard.KeyboardListener
@@ -25,7 +26,7 @@ import java.io.File
 class SoundModal {
     companion object {
 
-        data class SoundResult(val name: String, val files: List<File>, val type: SoundType, val keys: List<Int>)
+        data class SoundResult(val name: String, val files: List<File>, val type: SoundType, val keys: List<KeyPressed>)
 
         fun show(
             mainStage: Stage,
@@ -98,8 +99,8 @@ class SoundModal {
             }
 
             val listener = object : KeyboardListener {
-                override fun afterKeyPressed(key: Int, curPressed: List<Int>) {
-                    if (key == NativeKeyEvent.VC_ESCAPE) {
+                override fun afterKeyPressed(key: KeyPressed, curPressed: List<KeyPressed>) {
+                    if (key.code == NativeKeyEvent.VC_ESCAPE) {
                         recording = false
                         keysButton.graphic = ImageView(UiImages.KEYBOARD)
                         GlobalEventsManager.INSTANCE.unregister(this)
@@ -111,7 +112,7 @@ class SoundModal {
                     keysLabel.text = KeyboardUtils.getDefaultKeyText(curKeys, "Keys")
                 }
 
-                override fun beforeKeyReleased(key: Int, curPressed: List<Int>) {
+                override fun beforeKeyReleased(key: KeyPressed, curPressed: List<KeyPressed>) {
 
                 }
             }

@@ -1,5 +1,6 @@
 package ru.rofleksey.roflboard.sound.rules
 
+import ru.rofleksey.roflboard.data.KeyPressed
 import ru.rofleksey.roflboard.keyboard.KeyboardUtils
 import ru.rofleksey.roflboard.sound.SoundEntry
 
@@ -8,7 +9,7 @@ class DuplicatesSoundRule(sounds: List<SoundEntry>) : SoundCheckRule {
     override fun check(): List<SoundCheckAlert> {
         val result = ArrayList<SoundCheckAlert>()
         val nameMap = HashMap<String, MutableList<SoundEntry>>()
-        val keysMap = HashMap<List<Int>, MutableList<SoundEntry>>()
+        val keysMap = HashMap<List<KeyPressed>, MutableList<SoundEntry>>()
         val pathsMap = HashMap<String, MutableList<SoundEntry>>()
         sounds.forEach { sound ->
             nameMap.compute(sound.name) { _, list ->

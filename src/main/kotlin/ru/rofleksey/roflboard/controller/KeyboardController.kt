@@ -3,6 +3,7 @@ package ru.rofleksey.roflboard.controller
 import javafx.beans.property.ReadOnlyObjectProperty
 import javafx.beans.property.SimpleBooleanProperty
 import ru.rofleksey.roflboard.data.AppData
+import ru.rofleksey.roflboard.data.KeyPressed
 import ru.rofleksey.roflboard.keyboard.GlobalEventsManager
 import ru.rofleksey.roflboard.keyboard.KeyboardListener
 import ru.rofleksey.roflboard.sound.SoundEngine
@@ -11,17 +12,17 @@ import ru.rofleksey.roflboard.voice.VoiceEngine
 
 class KeyboardController : Controller {
     companion object {
-        private data class SoundLink(val soundId: Int, val keys: List<Int>, var isPressed: Boolean)
+        private data class SoundLink(val soundId: Int, val keys: List<KeyPressed>, var isPressed: Boolean)
     }
 
     private val soundMap = ArrayList<SoundLink>()
     private lateinit var soundEngine: SoundEngine
     private lateinit var voiceEngine: VoiceEngine
-    private lateinit var voiceKeys: ReadOnlyObjectProperty<Int?>
+    private lateinit var voiceKeys: ReadOnlyObjectProperty<KeyPressed?>
     private lateinit var voiceActive: SimpleBooleanProperty
 
     private val keyboardListener = object : KeyboardListener {
-        override fun afterKeyPressed(key: Int, curPressed: List<Int>) {
+        override fun afterKeyPressed(key: KeyPressed, curPressed: List<KeyPressed>) {
             var maxLinks: MutableList<SoundLink> = mutableListOf()
             var maxScore = 0
             soundMap.forEach { link ->
@@ -46,7 +47,7 @@ class KeyboardController : Controller {
             }
         }
 
-        override fun beforeKeyReleased(key: Int, curPressed: List<Int>) {
+        override fun beforeKeyReleased(key: KeyPressed, curPressed: List<KeyPressed>) {
             soundMap.forEach { link ->
                 if (link.isPressed) {
                     if (link.keys.contains(key)) {

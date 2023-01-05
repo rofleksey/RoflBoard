@@ -23,7 +23,7 @@ class SilenceSoundRule(sounds: List<SoundEntry>) : SoundCheckRule {
                         }
                         val silenceOffset = SilenceDetector.detectSilence(audioData, format.isBigEndian)
                         val startSilenceSeconds = silenceOffset.start / (format.frameSize * format.frameRate)
-                        val endSilenceSeconds = silenceOffset.end / (format.frameSize * format.frameRate)
+//                        val endSilenceSeconds = silenceOffset.end / (format.frameSize * format.frameRate)
                         if (startSilenceSeconds > 0.1f) {
                             result.add(
                                 SoundCheckAlert(
@@ -31,17 +31,16 @@ class SilenceSoundRule(sounds: List<SoundEntry>) : SoundCheckRule {
                                     SoundCheckAlert.Status.WARNING
                                 )
                             )
-                            println("${sound.name} $startSilenceSeconds $endSilenceSeconds")
                         }
-                        if (endSilenceSeconds > 1f) {
-                            result.add(
-                                SoundCheckAlert(
-                                    "Sound '${sound.name}' has large silence period at the end",
-                                    SoundCheckAlert.Status.WARNING
-                                )
-                            )
-                            println("${sound.name} $startSilenceSeconds $endSilenceSeconds")
-                        }
+//                        if (endSilenceSeconds > 1f) {
+//                            result.add(
+//                                SoundCheckAlert(
+//                                    "Sound '${sound.name}' has large silence period at the end",
+//                                    SoundCheckAlert.Status.WARNING
+//                                )
+//                            )
+//                            println("${sound.name} $startSilenceSeconds $endSilenceSeconds")
+//                        }
                     }
                 } catch (ignored: Throwable) {
 

@@ -1,0 +1,1099 @@
+{
+  "name": "default",
+  "rows": [
+    {
+      "arrays": [
+        {
+          "x": 0.5,
+          "y": 0.5,
+          "gap": 0.25,
+          "keys": [
+            {
+              "name": "Esc",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 1,
+                "location": 1
+              }
+            }
+          ]
+        },
+        {
+          "x": 4.0,
+          "y": 0.5,
+          "gap": 0.25,
+          "keys": [
+            {
+              "name": "F1",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 59,
+                "location": 1
+              }
+            },
+            {
+              "name": "F2",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 60,
+                "location": 1
+              }
+            },
+            {
+              "name": "F3",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 61,
+                "location": 1
+              }
+            },
+            {
+              "name": "F4",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 62,
+                "location": 1
+              }
+            }
+          ]
+        },
+        {
+          "x": 11.875,
+          "y": 0.5,
+          "gap": 0.25,
+          "keys": [
+            {
+              "name": "F5",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 63,
+                "location": 1
+              }
+            },
+            {
+              "name": "F6",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 64,
+                "location": 1
+              }
+            },
+            {
+              "name": "F7",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 65,
+                "location": 1
+              }
+            },
+            {
+              "name": "F8",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 66,
+                "location": 1
+              }
+            }
+          ]
+        },
+        {
+          "x": 19.75,
+          "y": 0.5,
+          "gap": 0.25,
+          "keys": [
+            {
+              "name": "F9",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 67,
+                "location": 1
+              }
+            },
+            {
+              "name": "F10",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 68,
+                "location": 1
+              }
+            },
+            {
+              "name": "F11",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 87,
+                "location": 1
+              }
+            },
+            {
+              "name": "F12",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 88,
+                "location": 1
+              }
+            }
+          ]
+        },
+        {
+          "x": 35.65,
+          "y": 0.5,
+          "gap": 0.25,
+          "keys": [
+            {
+              "name": "PrintScreen",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 3639,
+                "location": 1
+              }
+            },
+            {
+              "name": "ScrollLock",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 70,
+                "location": 1
+              }
+            },
+            {
+              "name": "Pause",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 3653,
+                "location": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "arrays": [
+        {
+          "x": 0.5,
+          "y": 2.5,
+          "gap": 0.25,
+          "keys": [
+            {
+              "name": "~",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 41,
+                "location": 1
+              }
+            },
+            {
+              "name": "1",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 2,
+                "location": 1
+              }
+            },
+            {
+              "name": "2",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 3,
+                "location": 1
+              }
+            },
+            {
+              "name": "3",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 4,
+                "location": 1
+              }
+            },
+            {
+              "name": "4",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 5,
+                "location": 1
+              }
+            },
+            {
+              "name": "5",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 6,
+                "location": 1
+              }
+            },
+            {
+              "name": "6",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 7,
+                "location": 1
+              }
+            },
+            {
+              "name": "7",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 8,
+                "location": 1
+              }
+            },
+            {
+              "name": "8",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 9,
+                "location": 1
+              }
+            },
+            {
+              "name": "9",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 10,
+                "location": 1
+              }
+            },
+            {
+              "name": "0",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 11,
+                "location": 1
+              }
+            },
+            {
+              "name": "-",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 12,
+                "location": 1
+              }
+            },
+            {
+              "name": "+",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 13,
+                "location": 1
+              }
+            },
+            {
+              "name": "<-",
+              "width": 3.25,
+              "height": 1.5,
+              "key": {
+                "code": 14,
+                "location": 1
+              }
+            }
+          ]
+        },
+        {
+          "x": 27.7,
+          "y": 2.5,
+          "gap": 0.25,
+          "keys": [
+            {
+              "name": "Insert",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 3666,
+                "location": 4
+              }
+            },
+            {
+              "name": "Home",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 3655,
+                "location": 4
+              }
+            },
+            {
+              "name": "PageUp",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 3657,
+                "location": 4
+              }
+            }
+          ]
+        },
+        {
+          "x": 33.9,
+          "y": 2.5,
+          "gap": 0.25,
+          "keys": [
+            {
+              "name": "NumLock",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 69,
+                "location": 4
+              }
+            },
+            {
+              "name": "/",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 53,
+                "location": 4
+              }
+            },
+            {
+              "name": "*",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 3639,
+                "location": 4
+              }
+            },
+            {
+              "name": "-",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 3658,
+                "location": 4
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "arrays": [
+        {
+          "x": 0.5,
+          "y": 4.5,
+          "gap": 0.25,
+          "keys": [
+            {
+              "name": "Tab",
+              "width": 2.5,
+              "height": 1.5,
+              "key": {
+                "code": 15,
+                "location": 1
+              }
+            },
+            {
+              "name": "Q",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 16,
+                "location": 1
+              }
+            },
+            {
+              "name": "W",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 17,
+                "location": 1
+              }
+            },
+            {
+              "name": "E",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 18,
+                "location": 1
+              }
+            },
+            {
+              "name": "R",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 19,
+                "location": 1
+              }
+            },
+            {
+              "name": "T",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 20,
+                "location": 1
+              }
+            },
+            {
+              "name": "Y",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 21,
+                "location": 1
+              }
+            },
+            {
+              "name": "U",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 22,
+                "location": 1
+              }
+            },
+            {
+              "name": "I",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 23,
+                "location": 1
+              }
+            },
+            {
+              "name": "O",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 24,
+                "location": 1
+              }
+            },
+            {
+              "name": "P",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 25,
+                "location": 1
+              }
+            },
+            {
+              "name": "[",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 26,
+                "location": 1
+              }
+            },
+            {
+              "name": "]",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 27,
+                "location": 1
+              }
+            },
+            {
+              "name": "\\",
+              "width": 2.25,
+              "height": 1.5,
+              "key": {
+                "code": 43,
+                "location": 1
+              }
+            }
+          ]
+        },
+        {
+          "x": 27.7,
+          "y": 4.5,
+          "gap": 0.25,
+          "keys": [
+            {
+              "name": "Delete",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 3667,
+                "location": 4
+              }
+            },
+            {
+              "name": "End",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 3663,
+                "location": 4
+              }
+            },
+            {
+              "name": "PageDown",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 3665,
+                "location": 4
+              }
+            }
+          ]
+        },
+        {
+          "x": 33.9,
+          "y": 4.5,
+          "gap": 0.25,
+          "keys": [
+            {
+              "name": "7",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 8,
+                "location": 4
+              }
+            },
+            {
+              "name": "8",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 9,
+                "location": 4
+              }
+            },
+            {
+              "name": "9",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 10,
+                "location": 4
+              }
+            },
+            {
+              "name": "+",
+              "width": 1.5,
+              "height": 3.5,
+              "key": {
+                "code": 3662,
+                "location": 4
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "arrays": [
+        {
+          "x": 0.5,
+          "y": 6.5,
+          "gap": 0.25,
+          "keys": [
+            {
+              "name": "CapsLock",
+              "width": 3.0,
+              "height": 1.5,
+              "key": {
+                "code": 58,
+                "location": 1
+              }
+            },
+            {
+              "name": "A",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 30,
+                "location": 1
+              }
+            },
+            {
+              "name": "S",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 31,
+                "location": 1
+              }
+            },
+            {
+              "name": "D",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 32,
+                "location": 1
+              }
+            },
+            {
+              "name": "F",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 33,
+                "location": 1
+              }
+            },
+            {
+              "name": "G",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 34,
+                "location": 1
+              }
+            },
+            {
+              "name": "H",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 35,
+                "location": 1
+              }
+            },
+            {
+              "name": "J",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 36,
+                "location": 1
+              }
+            },
+            {
+              "name": "K",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 37,
+                "location": 1
+              }
+            },
+            {
+              "name": "L",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 38,
+                "location": 1
+              }
+            },
+            {
+              "name": ":",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 39,
+                "location": 1
+              }
+            },
+            {
+              "name": "\"",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 40,
+                "location": 1
+              }
+            },
+            {
+              "name": "Enter",
+              "width": 3.5,
+              "height": 1.5,
+              "key": {
+                "code": 28,
+                "location": 1
+              }
+            }
+          ]
+        },
+        {
+          "x": 33.9,
+          "y": 6.5,
+          "gap": 0.25,
+          "keys": [
+            {
+              "name": "4",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 5,
+                "location": 4
+              }
+            },
+            {
+              "name": "5",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 6,
+                "location": 4
+              }
+            },
+            {
+              "name": "6",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 7,
+                "location": 4
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "arrays": [
+        {
+          "x": 0.5,
+          "y": 8.5,
+          "gap": 0.25,
+          "keys": [
+            {
+              "name": "Shift",
+              "width": 4.0,
+              "height": 1.5,
+              "key": {
+                "code": 42,
+                "location": 2
+              }
+            },
+            {
+              "name": "Z",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 44,
+                "location": 1
+              }
+            },
+            {
+              "name": "X",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 45,
+                "location": 1
+              }
+            },
+            {
+              "name": "C",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 46,
+                "location": 1
+              }
+            },
+            {
+              "name": "V",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 47,
+                "location": 1
+              }
+            },
+            {
+              "name": "B",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 48,
+                "location": 1
+              }
+            },
+            {
+              "name": "N",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 49,
+                "location": 1
+              }
+            },
+            {
+              "name": "M",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 50,
+                "location": 1
+              }
+            },
+            {
+              "name": "<",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 51,
+                "location": 1
+              }
+            },
+            {
+              "name": ">",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 52,
+                "location": 1
+              }
+            },
+            {
+              "name": "?",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 53,
+                "location": 1
+              }
+            },
+            {
+              "name": "Shift",
+              "width": 4.25,
+              "height": 1.5,
+              "key": {
+                "code": 3638,
+                "location": 3
+              }
+            }
+          ]
+        },
+        {
+          "x": 29.45,
+          "y": 8.5,
+          "gap": 0.25,
+          "keys": [
+            {
+              "name": "Up",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 57416,
+                "location": 4
+              }
+            }
+          ]
+        },
+        {
+          "x": 33.9,
+          "y": 8.5,
+          "gap": 0.25,
+          "keys": [
+            {
+              "name": "1",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 2,
+                "location": 4
+              }
+            },
+            {
+              "name": "2",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 3,
+                "location": 4
+              }
+            },
+            {
+              "name": "3",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 4,
+                "location": 4
+              }
+            },
+            {
+              "name": "Enter",
+              "width": 1.5,
+              "height": 3.5,
+              "key": {
+                "code": 28,
+                "location": 4
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "arrays": [
+        {
+          "x": 0.5,
+          "y": 10.5,
+          "gap": 0.2,
+          "keys": [
+            {
+              "name": "Ctrl",
+              "width": 2.05,
+              "height": 1.5,
+              "key": {
+                "code": 29,
+                "location": 2
+              }
+            },
+            {
+              "name": "Meta",
+              "width": 1.8,
+              "height": 1.5,
+              "key": {
+                "code": 3675,
+                "location": 2
+              }
+            },
+            {
+              "name": "Alt",
+              "width": 1.8,
+              "height": 1.5,
+              "key": {
+                "code": 56,
+                "location": 2
+              }
+            },
+            {
+              "name": "Space",
+              "width": 11.5,
+              "height": 1.5,
+              "key": {
+                "code": 57,
+                "location": 1
+              }
+            },
+            {
+              "name": "Alt",
+              "width": 1.8,
+              "height": 1.5,
+              "key": {
+                "code": 56,
+                "location": 3
+              }
+            },
+            {
+              "name": "Fn",
+              "width": 1.8,
+              "height": 1.5,
+              "key": {
+                "code": -1,
+                "location": -1
+              }
+            },
+            {
+              "name": "Context",
+              "width": 1.8,
+              "height": 1.5,
+              "key": {
+                "code": 3677,
+                "location": 1
+              }
+            },
+            {
+              "name": "Ctrl",
+              "width": 2.05,
+              "height": 1.5,
+              "key": {
+                "code": 29,
+                "location": 3
+              }
+            }
+          ]
+        },
+        {
+          "x": 27.7,
+          "y": 10.5,
+          "gap": 0.25,
+          "keys": [
+            {
+              "name": "Left",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 57419,
+                "location": 4
+              }
+            },
+            {
+              "name": "Bottom",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 57424,
+                "location": 4
+              }
+            },
+            {
+              "name": "Right",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 57421,
+                "location": 4
+              }
+            }
+          ]
+        },
+        {
+          "x": 33.9,
+          "y": 10.5,
+          "gap": 0.25,
+          "keys": [
+            {
+              "name": "0",
+              "width": 3.25,
+              "height": 1.5,
+              "key": {
+                "code": 11,
+                "location": 4
+              }
+            },
+            {
+              "name": ".",
+              "width": 1.5,
+              "height": 1.5,
+              "key": {
+                "code": 83,
+                "location": 4
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "ratio": 37.06564
+}

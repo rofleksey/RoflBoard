@@ -1,8 +1,12 @@
 package ru.rofleksey.roflboard.utils
 
+import kotlin.math.abs
+
 class SilenceDetector {
+
     data class SilenceOffset(val start: Int, val end: Int)
     companion object {
+        private const val THRESHOLD: Short = 10
 
         fun detectSilence(data: ByteArray, isBigEndian: Boolean): SilenceOffset {
             if (isBigEndian) {
@@ -32,7 +36,7 @@ class SilenceDetector {
                 val sampleValue = (bigHalf + smallHalf).toShort()
 
                 // Non-zero sample found, we've reached some sound.
-                if (sampleValue.toInt() != 0) {
+                if (abs(sampleValue.toInt()) >= THRESHOLD) {
                     index = i
                     return index
                 }
@@ -53,7 +57,7 @@ class SilenceDetector {
 
                 // Non-zero sample found, we've reached some sound.
                 // index + 2 as we want to keep this current sample when cutting.
-                if (sampleValue.toInt() != 0) {
+                if (abs(sampleValue.toInt()) >= THRESHOLD) {
                     index = i + 2
                     return index
                 }
@@ -73,7 +77,7 @@ class SilenceDetector {
                 val sampleValue = (bigHalf + smallHalf).toShort()
 
                 // Non-zero sample found, we've reached some sound.
-                if (sampleValue > 0) {
+                if (abs(sampleValue.toInt()) >= THRESHOLD) {
                     index = i
                     return index
                 }
@@ -94,7 +98,7 @@ class SilenceDetector {
 
                 // Non-zero sample found, we've reached some sound.
                 // index + 2 as we want to keep this current sample when cutting.
-                if (sampleValue > 0) {
+                if (abs(sampleValue.toInt()) >= THRESHOLD) {
                     index = i + 2
                     return index
                 }

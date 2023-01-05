@@ -29,9 +29,7 @@ import ru.rofleksey.roflboard.keyboard.KeyboardListener
 import ru.rofleksey.roflboard.keyboard.KeyboardUtils
 import ru.rofleksey.roflboard.sound.*
 import ru.rofleksey.roflboard.sound.rules.SoundCheckAlert
-import ru.rofleksey.roflboard.ui.SoundModal
-import ru.rofleksey.roflboard.ui.SoundView
-import ru.rofleksey.roflboard.ui.UiImages
+import ru.rofleksey.roflboard.ui.*
 import ru.rofleksey.roflboard.utils.FileChooserBuilder
 import ru.rofleksey.roflboard.voice.VoiceEngine
 import java.awt.Desktop
@@ -70,6 +68,7 @@ open class Main : Application() {
         appData.getVoiceHighPassFactor()
     )
 
+    private val soundEntriesList = appData.getSoundEntryList()
     private val soundBoardTable = TableView(appData.getSoundViewList())
     private val alertList = SoundCheckService.INSTANCE.getAlertList()
     private val alertIsChecking = SoundCheckService.INSTANCE.isChecking()
@@ -190,10 +189,19 @@ open class Main : Application() {
 
         val aboutMenuItem = MenuItem("About")
         aboutMenuItem.setOnAction {
-
+            AboutModal().show()
         }
 
-        val motivationMenuItem = MenuItem("Motivation")
+        val gitMenuItem = MenuItem("GitHub Repo")
+        gitMenuItem.setOnAction {
+            try {
+                Desktop.getDesktop().browse(URL("https://github.com/rofleksey/RoflBoard").toURI())
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        val motivationMenuItem = MenuItem("Mo T. Vation Inc.")
         motivationMenuItem.setOnAction {
             try {
                 Desktop.getDesktop().browse(URL("https://youtu.be/NOZONW-UK0w?t=24").toURI())
@@ -201,7 +209,7 @@ open class Main : Application() {
                 e.printStackTrace()
             }
         }
-        helpMenu.items.addAll(aboutMenuItem, motivationMenuItem)
+        helpMenu.items.addAll(aboutMenuItem, gitMenuItem, motivationMenuItem)
 
         val menuBar = MenuBar().apply {
             menus.addAll(fileMenu, helpMenu)
@@ -346,28 +354,37 @@ open class Main : Application() {
 
         val eyeButton = Button().apply {
             graphic = ImageView(UiImages.EYE)
+            isDisable = soundEntriesList.isEmpty()
         }
         eyeButton.setOnAction {
-
+            KeyboardModelWindow().show(appData.getSoundEntryList())
         }
+        soundEntriesList.addListener(InvalidationListener {
+            eyeButton.isDisable = soundEntriesList.isEmpty()
+        })
 
         val warningButton = Button().apply {
             graphic = ImageView(UiImages.CHECK)
+            graphicTextGap = 2.0
             isDisable = true
         }
         val listener = Runnable {
             if (alertIsChecking.get()) {
                 warningButton.isDisable = true
                 warningButton.graphic = ImageView(UiImages.REFRESH)
+                warningButton.text = ""
             } else if (alertList.any { it.status == SoundCheckAlert.Status.ERROR }) {
                 warningButton.isDisable = false
                 warningButton.graphic = ImageView(UiImages.ALERT)
+                warningButton.text = alertList.size.toString()
             } else if (alertList.isNotEmpty()) {
                 warningButton.isDisable = false
                 warningButton.graphic = ImageView(UiImages.EXCLAMATION)
+                warningButton.text = alertList.size.toString()
             } else {
                 warningButton.isDisable = true
                 warningButton.graphic = ImageView(UiImages.CHECK)
+                warningButton.text = ""
             }
         }
         alertIsChecking.addListener(InvalidationListener {

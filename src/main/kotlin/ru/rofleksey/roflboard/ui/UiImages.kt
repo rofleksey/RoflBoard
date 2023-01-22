@@ -14,5 +14,6 @@ class UiImages {
         val EXCLAMATION = Image(UiImages::class.java.getResourceAsStream("/exclamation.png"))
         val KEYBOARD = Image(UiImages::class.java.getResourceAsStream("/keyboard.png"))
         val KEYBOARD_OFF = Image(UiImages::class.java.getResourceAsStream("/keyboard-off.png"))
+        val TRASH = Image(UiImages::class.java.getResourceAsStream("/trash.png"))
     }
 }

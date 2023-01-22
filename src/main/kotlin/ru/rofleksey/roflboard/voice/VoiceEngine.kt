@@ -6,11 +6,14 @@ import be.tarsos.dsp.WaveformSimilarityBasedOverlapAdd
 import be.tarsos.dsp.filters.HighPass
 import be.tarsos.dsp.io.jvm.JVMAudioInputStream
 import be.tarsos.dsp.resample.RateTransposer
+import com.adonax.audiocue.AudioCue
 import javafx.beans.property.ReadOnlyObjectProperty
+import javafx.beans.property.ReadOnlyStringProperty
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleFloatProperty
 import javafx.beans.value.ChangeListener
 import ru.rofleksey.roflboard.sound.SoundEngine
+import java.io.File
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.logging.Logger
@@ -23,6 +26,8 @@ class VoiceEngine(
     private val maxGain: SimpleFloatProperty,
     private val pitchFactor: SimpleFloatProperty,
     private val highPassFactor: SimpleFloatProperty,
+    private val voiceMusic: ReadOnlyStringProperty,
+    private val voiceMusicVolume: SimpleFloatProperty
 ) {
     companion object {
         private const val SAMPLE_RATE = 48000.0
@@ -40,26 +45,16 @@ class VoiceEngine(
     private var rateTransposer: RateTransposer? = null
     private var highPass: HighPass? = null
     private var line: TargetDataLine? = null
+    private var voiceMusicPlayer: AudioCue? = null
+    private var voiceMusicInstanceId = -1
     private var task: Future<*>? = null
 
-    private val voiceFeatureEnabledListener = ChangeListener { _, _, curEnabled ->
-        if (curEnabled && voiceMixerParams.get().isProper()) {
-            stop()
-            start()
-        } else {
-            stop()
-        }
+    private val voiceFeatureEnabledListener = ChangeListener<Boolean> { _, _, curEnabled ->
+        restart()
     }
 
     private val mixerParamsListener = ChangeListener<VoiceMixerParams> { _, _, _ ->
-        if (!voiceMixerParams.get().isProper()) {
-            stop()
-            return@ChangeListener
-        }
-        if (voiceFeatureEnabled.get()) {
-            stop()
-            start()
-        }
+        restart()
     }
 
     private val voiceOnListener = ChangeListener<Boolean> { _, _, _ ->
@@ -67,6 +62,10 @@ class VoiceEngine(
     }
 
     private val maxGainListener = ChangeListener<Number> { _, _, _ ->
+        applyGain()
+    }
+
+    private val voiceMusicVolumeListener = ChangeListener<Number> { _, _, _ ->
         applyGain()
     }
 
@@ -84,6 +83,10 @@ class VoiceEngine(
         highPass?.setFrequency(factor.toFloat())
     }
 
+    private val voiceMusicListener = ChangeListener<String> { _, _, path ->
+        restart()
+    }
+
     fun init() {
         voiceFeatureEnabled.addListener(voiceFeatureEnabledListener)
         voiceMixerParams.addListener(mixerParamsListener)
@@ -91,10 +94,14 @@ class VoiceEngine(
         maxGain.addListener(maxGainListener)
         pitchFactor.addListener(pitchFactorListener)
         highPassFactor.addListener(highPassFactorListener)
-        if (voiceFeatureEnabled.get()) {
-            stop()
-            start()
-        }
+        voiceMusic.addListener(voiceMusicListener)
+        voiceMusicVolume.addListener(voiceMusicVolumeListener)
+        restart()
+    }
+
+    private fun restart() {
+        stop()
+        start()
     }
 
     fun dispose() {
@@ -104,6 +111,8 @@ class VoiceEngine(
         maxGain.removeListener(maxGainListener)
         pitchFactor.removeListener(pitchFactorListener)
         highPassFactor.removeListener(highPassFactorListener)
+        voiceMusic.removeListener(voiceMusicListener)
+        voiceMusicVolume.removeListener(voiceMusicVolumeListener)
         stop()
     }
 
@@ -111,14 +120,16 @@ class VoiceEngine(
         if (voiceActive.get()) {
             log.info("Voice ON")
             gainProcessor?.setGain(maxGain.get().toDouble())
+            voiceMusicPlayer?.setVolume(voiceMusicInstanceId, voiceMusicVolume.get().toDouble())
         } else {
             log.info("Voice OFF")
             gainProcessor?.setGain(0.0)
+            voiceMusicPlayer?.setVolume(voiceMusicInstanceId, 0.0)
         }
     }
 
     private fun start() {
-        if (!voiceMixerParams.get().isProper()) {
+        if (!voiceFeatureEnabled.get() || !voiceMixerParams.get().isProper()) {
             return
         }
         wsola = WaveformSimilarityBasedOverlapAdd(
@@ -142,7 +153,28 @@ class VoiceEngine(
         dispatcher!!.addAudioProcessor(player)
 
         task = executor.submit(dispatcher!!)
+
+        startMusic()
+
         log.info("Voice engine started with mixers '${voiceMixerParams.get().mixerInput!!.name}' -> '${voiceMixerParams.get().mixerOutput!!.name}'")
+    }
+
+    private fun startMusic() {
+        val musicPath = voiceMusic.get() ?: return
+        val musicFile = File(musicPath)
+        if (!musicFile.exists()) {
+            return
+        }
+        try {
+            val mixer = AudioSystem.getMixer(voiceMixerParams.get().mixerOutput)
+            voiceMusicPlayer = AudioCue.makeStereoCue(musicFile.toURI().toURL(), 1)
+            voiceMusicPlayer!!.open(mixer, 1024, Thread.MAX_PRIORITY)
+            voiceMusicInstanceId = voiceMusicPlayer!!.play()
+            voiceMusicPlayer!!.setVolume(voiceMusicInstanceId, 0.0)
+            voiceMusicPlayer!!.setLooping(voiceMusicInstanceId, -1)
+        } catch (e: Throwable) {
+            log.warning("Failed to load bg music: ${e.message}")
+        }
     }
 
     private fun stop() {
@@ -150,6 +182,11 @@ class VoiceEngine(
         dispatcher?.stop()
         line?.stop()
         line?.close()
+        try {
+            voiceMusicPlayer?.close()
+        } catch (ignored: Throwable) {
+
+        }
         log.info("Voice engine stopped")
     }
 

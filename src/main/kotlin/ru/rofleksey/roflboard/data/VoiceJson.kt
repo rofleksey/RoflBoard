@@ -9,4 +9,6 @@ data class VoiceJson(
     val key: KeyPressed?,
     val pitchFactor: Float,
     val highPassFactor: Float,
+    val music: String?,
+    val musicVolume: Float,
 )

@@ -54,6 +54,9 @@ class AppData {
     private var voicePitchFactor = SimpleFloatProperty(1.0f)
     private var voiceHighPassFactor = SimpleFloatProperty(0.0f)
 
+    private var voiceMusic = ReadOnlyStringWrapper(null)
+    private var voiceMusicVolume = SimpleFloatProperty(1.0f)
+
     fun getSoundViewList(): ObservableList<SoundView> = soundViewList
     fun getSoundEntryList(): ObservableList<SoundEntry> = FXCollections.unmodifiableObservableList(soundEntryList)
     fun getAvailableOutputMixersList(): ObservableList<String> =
@@ -79,6 +82,8 @@ class AppData {
     fun getVoiceMixerParams(): ReadOnlyObjectProperty<VoiceMixerParams> = voiceMixerParams.readOnlyProperty
     fun getVoicePitchFactor() = voicePitchFactor
     fun getVoiceHighPassFactor() = voiceHighPassFactor
+    fun getVoiceMusic(): ReadOnlyStringProperty = voiceMusic.readOnlyProperty
+    fun getVoiceMusicVolume() = voiceMusicVolume
 
     private fun getMixerMain() = availableOutputMixersData.find { info ->
         info.name == mixerMainName
@@ -161,6 +166,11 @@ class AppData {
     fun setVoiceKey(key: KeyPressed) {
         updateConfigName(true)
         voiceKey.set(key)
+    }
+
+    fun setVoiceMusic(file: File?) {
+        updateConfigName(true)
+        voiceMusic.set(file?.absolutePath)
     }
 
     private fun updateAvailableMixersImpl(oldMixerMain: String?, oldMixerSecondary: String?, oldMixerVoice: String?) {
@@ -305,7 +315,9 @@ class AppData {
             mixerVoiceJson,
             voiceKey.get(),
             voicePitchFactor.get(),
-            voiceHighPassFactor.get()
+            voiceHighPassFactor.get(),
+            voiceMusic.get(),
+            voiceMusicVolume.get(),
         )
 
         val config = ConfigJson(soundBoardJson, voiceJson)
@@ -372,6 +384,8 @@ class AppData {
         voiceKey.set(json.voice.key)
         voicePitchFactor.set(json.voice.pitchFactor)
         voiceHighPassFactor.set(json.voice.highPassFactor)
+        voiceMusic.set(json.voice.music)
+        voiceMusicVolume.set(json.voice.musicVolume)
 
         Preferences.INSTANCE.putString(LAST_CONFIG_PREF, file.absolutePath).save()
     }

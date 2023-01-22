@@ -19,6 +19,7 @@ dependencies {
     implementation("com.github.kwhat:jnativehook:2.2.2")
     implementation("net.jthink:jaudiotagger:3.0.1")
     implementation("com.dustinredmond.fxtrayicon:FXTrayIcon:4.0.1")
+    implementation("com.adonax:audiocue:2.0.0")
     implementation(files("lib/TarsosDSP-2.4.jar"))
 }
 

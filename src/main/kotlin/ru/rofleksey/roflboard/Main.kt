@@ -34,6 +34,7 @@ import ru.rofleksey.roflboard.ui.*
 import ru.rofleksey.roflboard.utils.FileChooserBuilder
 import ru.rofleksey.roflboard.voice.VoiceEngine
 import java.awt.Desktop
+import java.io.File
 import java.net.URL
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -65,7 +66,9 @@ open class Main : Application() {
             appData.getVoiceMixerParams(),
             appData.getVolumeVoice(),
             appData.getVoicePitchFactor(),
-            appData.getVoiceHighPassFactor()
+            appData.getVoiceHighPassFactor(),
+            appData.getVoiceMusic(),
+            appData.getVoiceMusicVolume(),
         )
         private lateinit var trayIcon: FXTrayIcon
 
@@ -578,6 +581,8 @@ open class Main : Application() {
             selectedProperty().bindBidirectional(appData.getVoiceFeatureEnabled())
         }
 
+        val enabledSeparator = Separator()
+
         val voiceSettings = VBox(10.0).apply {
             isFillWidth = true
             disableProperty().bind(appData.getVoiceFeatureEnabled().not())
@@ -701,7 +706,71 @@ open class Main : Application() {
             voiceHighPassHBox
         )
 
-        voiceContent.children.addAll(voiceCheckBox, voiceSettings)
+        val voiceSettingsSeparator = Separator()
+
+        val voiceMusicSettings = VBox(10.0).apply {
+            isFillWidth = true
+            disableProperty().bind(appData.getVoiceFeatureEnabled().not())
+        }
+
+        val voiceMusicLabel = Label("Background music")
+
+        val voiceMusicHBox = HBox(5.0).apply {
+            alignment = Pos.CENTER_LEFT
+        }
+        val voiceMusicFileLabel = Label()
+        val voiceMusicFileLabelListener = Runnable {
+            val file = appData.getVoiceMusic().get()
+            if (file == null) {
+                voiceMusicFileLabel.text = "Not set"
+                return@Runnable
+            }
+            voiceMusicFileLabel.text = File(file).name
+        }
+        appData.getVoiceMusic().addListener(InvalidationListener {
+            voiceMusicFileLabelListener.run()
+        })
+        voiceMusicFileLabelListener.run()
+        val voiceMusicPickButton = Button().apply {
+            graphic = ImageView(UiImages.FILE)
+        }
+        voiceMusicPickButton.setOnAction {
+            val file = FileChooserBuilder
+                .new("sound")
+                .setTitle("Select music")
+                .addExtensionFilters(FileChooser.ExtensionFilter("WAV", "*.wav"))
+                .showOpenDialog(stage)
+            if (file != null) {
+                appData.setVoiceMusic(file)
+            }
+        }
+        val voiceMusicResetButton = Button().apply {
+            graphic = ImageView(UiImages.TRASH)
+        }
+        voiceMusicResetButton.setOnAction {
+            appData.setVoiceMusic(null)
+        }
+        HBox.setHgrow(voiceVolumeSlider, Priority.ALWAYS)
+        voiceMusicHBox.children.addAll(voiceMusicFileLabel, voiceMusicPickButton, voiceMusicResetButton)
+
+        val voiceMusicVolumeHBox = HBox(5.0).apply {
+            alignment = Pos.CENTER_LEFT
+        }
+        val voiceMusicVolumeLabel = Label("Volume")
+        val voiceMusicVolumeSlider = Slider(0.0, 1.0, appData.getVoiceMusicVolume().get().toDouble())
+        voiceMusicVolumeSlider.valueProperty().bindBidirectional(appData.getVoiceMusicVolume())
+        HBox.setHgrow(voiceMusicVolumeSlider, Priority.ALWAYS)
+        voiceMusicVolumeHBox.children.addAll(voiceMusicVolumeLabel, voiceMusicVolumeSlider)
+
+        voiceMusicSettings.children.addAll(voiceMusicLabel, voiceMusicHBox, voiceMusicVolumeHBox)
+
+        voiceContent.children.addAll(
+            voiceCheckBox,
+            enabledSeparator,
+            voiceSettings,
+            voiceSettingsSeparator,
+            voiceMusicSettings
+        )
 
         voiceRoot.children.add(voiceContent)
 

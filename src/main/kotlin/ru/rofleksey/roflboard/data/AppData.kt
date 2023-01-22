@@ -11,12 +11,17 @@ import ru.rofleksey.roflboard.sound.MixerInfoCached
 import ru.rofleksey.roflboard.sound.SoundCheckService
 import ru.rofleksey.roflboard.sound.SoundEntry
 import ru.rofleksey.roflboard.ui.SoundView
+import ru.rofleksey.roflboard.utils.Preferences
 import ru.rofleksey.roflboard.voice.VoiceMixerParams
 import java.io.File
 import java.nio.charset.Charset
 import javax.sound.sampled.Mixer
 
 class AppData {
+    companion object {
+        const val LAST_CONFIG_PREF = "last_config"
+    }
+
     private var soundIdCounter = 0
 
     private val configName = ReadOnlyStringWrapper(null)
@@ -309,7 +314,16 @@ class AppData {
         file.writeText(str, charset = Charset.forName("UTF-8"))
     }
 
-    fun load(file: File): ConfigJson {
+    fun loadLast() {
+        val lastConfig = Preferences.INSTANCE.getString(LAST_CONFIG_PREF) ?: return
+        val file = File(lastConfig)
+        if (!file.exists()) {
+            return
+        }
+        load(file)
+    }
+
+    fun load(file: File) {
         configFile = file
 
         updateConfigName(false)
@@ -359,6 +373,6 @@ class AppData {
         voicePitchFactor.set(json.voice.pitchFactor)
         voiceHighPassFactor.set(json.voice.highPassFactor)
 
-        return json
+        Preferences.INSTANCE.putString(LAST_CONFIG_PREF, file.absolutePath).save()
     }
 }

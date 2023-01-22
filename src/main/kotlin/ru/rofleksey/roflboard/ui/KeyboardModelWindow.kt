@@ -8,12 +8,14 @@ import javafx.scene.input.MouseEvent
 import javafx.scene.layout.StackPane
 import javafx.scene.paint.Color
 import javafx.scene.text.Font
+import javafx.scene.text.FontPosture
 import javafx.scene.text.FontWeight
 import javafx.scene.text.Text
 import javafx.stage.Stage
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import ru.rofleksey.roflboard.data.KeyboardModel
+import ru.rofleksey.roflboard.data.SoundType
 import ru.rofleksey.roflboard.keyboard.RenderKeyboardModel
 import ru.rofleksey.roflboard.sound.SoundEntry
 import java.nio.charset.Charset
@@ -23,6 +25,7 @@ import kotlin.math.min
 class KeyboardModelWindow {
     companion object {
         private const val ZOOM_FACTOR = 0.001
+        private var window: Stage? = null
     }
 
     private val defaultModel: KeyboardModel = Json.decodeFromString(
@@ -43,6 +46,7 @@ class KeyboardModelWindow {
 
     private val boldFont = Font.font("monospace", FontWeight.EXTRA_BOLD, 13.0)
     private val normalFont = Font.font("monospace", 12.0)
+    private val italicFont = Font.font("monospace", FontPosture.ITALIC, 12.0)
 
     private lateinit var renderModel: RenderKeyboardModel
 
@@ -103,6 +107,19 @@ class KeyboardModelWindow {
                         curY += 12
                         g.font = normalFont
                         key.sounds.forEach { sound ->
+                            when (sound.type) {
+                                SoundType.PRESSED -> {
+                                    g.fill = Color.BLACK
+                                }
+
+                                SoundType.TOGGLE -> {
+                                    g.fill = Color.BLUE
+                                }
+
+                                else -> {
+                                    g.fill = Color.RED
+                                }
+                            }
                             val trimmedText = trimText(sound.name, g.font, key.width * renderModel.ratio)
                             val textWidth = measureTextWidth(trimmedText, normalFont)
                             g.fillText(
@@ -112,7 +129,7 @@ class KeyboardModelWindow {
                             )
                             curY += 12
                         }
-
+                        g.fill = Color.BLACK
                     }
                     curX += key.width + array.gap
                 }
@@ -140,6 +157,8 @@ class KeyboardModelWindow {
     }
 
     fun show(soundsObs: ObservableList<SoundEntry>) {
+        window?.close()
+
         sounds.addAll(soundsObs)
         genRenderModel()
 
@@ -189,6 +208,9 @@ class KeyboardModelWindow {
             title = "Keyboard Model"
             icons.add(UiImages.LOGO)
         }
+
+        window = windowStage
+
         windowStage.show()
 
         render(g)

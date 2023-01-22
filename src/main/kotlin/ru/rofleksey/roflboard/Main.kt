@@ -102,6 +102,10 @@ open class Main : Application() {
             }
             show()
         }
+
+        Platform.runLater {
+            appData.loadLast()
+        }
     }
 
     private fun initMenu(stage: Stage, root: BorderPane) {

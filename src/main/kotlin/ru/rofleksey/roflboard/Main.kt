@@ -1,5 +1,6 @@
 package ru.rofleksey.roflboard
 
+import com.dustinredmond.fxtrayicon.FXTrayIcon
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent
 import javafx.application.Application
 import javafx.application.Platform
@@ -44,42 +45,58 @@ open class Main : Application() {
         private val jAudioTaggerLogger = Logger.getLogger("org.jaudiotagger").apply {
             level = Level.OFF
         }
+        private var window: Stage? = null
+        private val appData = AppData()
+        private val soundEngine = SoundEngine()
+        private val soundController = ComplexController(listOf(KeyboardController(), NetworkController()))
+        private val clipSetRotationFactory = ClipSetRotationFactory()
+        private val soundFacade = SoundFacade(
+            soundEngine,
+            clipSetRotationFactory,
+            soundController,
+            appData.getSoundEntryList(),
+            appData.getActiveSoundBoardMixersList(),
+            appData.getVolumeMain(),
+            appData.getVolumeSecondary()
+        )
+        private val voiceEngine = VoiceEngine(
+            appData.getVoiceFeatureEnabled(),
+            appData.getVoiceActive(),
+            appData.getVoiceMixerParams(),
+            appData.getVolumeVoice(),
+            appData.getVoicePitchFactor(),
+            appData.getVoiceHighPassFactor()
+        )
+        private lateinit var trayIcon: FXTrayIcon
+
+        fun initApp() {
+            appData.updateAvailableInputMixers(SoundUtils.listInputMixers())
+            appData.updateAvailableOutputMixers(SoundUtils.listOutputMixers())
+            GlobalEventsManager.INSTANCE.init()
+            soundController.register(soundEngine, voiceEngine, appData)
+            soundFacade.init()
+            voiceEngine.init()
+        }
+
+        private fun shutdown() {
+            GlobalEventsManager.INSTANCE.dispose()
+            voiceEngine.dispose()
+            Platform.runLater {
+                exitProcess(0)
+            }
+        }
     }
 
-    private val appData = AppData()
-    private val soundEngine = SoundEngine()
-    private val soundController = ComplexController(listOf(KeyboardController(), NetworkController()))
-    private val clipSetRotationFactory = ClipSetRotationFactory()
-    private val soundFacade = SoundFacade(
-        soundEngine,
-        clipSetRotationFactory,
-        soundController,
-        appData.getSoundEntryList(),
-        appData.getActiveSoundBoardMixersList(),
-        appData.getVolumeMain(),
-        appData.getVolumeSecondary()
-    )
-    private val voiceEngine = VoiceEngine(
-        appData.getVoiceFeatureEnabled(),
-        appData.getVoiceActive(),
-        appData.getVoiceMixerParams(),
-        appData.getVolumeVoice(),
-        appData.getVoicePitchFactor(),
-        appData.getVoiceHighPassFactor()
-    )
 
     private val soundEntriesList = appData.getSoundEntryList()
     private val soundBoardTable = TableView(appData.getSoundViewList())
     private val alertList = SoundCheckService.INSTANCE.getAlertList()
     private val alertIsChecking = SoundCheckService.INSTANCE.isChecking()
 
-    override fun start(primaryStage: Stage) {
-        appData.updateAvailableInputMixers(SoundUtils.listInputMixers())
-        appData.updateAvailableOutputMixers(SoundUtils.listOutputMixers())
-        GlobalEventsManager.INSTANCE.init()
-        soundController.register(soundEngine, voiceEngine, appData)
-        soundFacade.init()
-        voiceEngine.init()
+    private fun show(primaryStage: Stage) {
+        if (window != null) {
+            return
+        }
 
         val root = BorderPane()
 
@@ -94,18 +111,40 @@ open class Main : Application() {
             titleProperty().bind(appData.getConfigName())
             scene = mainScene
             setOnHiding {
-                GlobalEventsManager.INSTANCE.dispose()
-                voiceEngine.dispose()
-                Platform.runLater {
-                    exitProcess(0)
-                }
+                window = null
             }
             show()
         }
+        window = primaryStage
+    }
+
+    private fun postInitApp(primaryStage: Stage) {
+        trayIcon = FXTrayIcon.Builder(primaryStage, UiImages.LOGO, 527, 582)
+            .applicationTitle("RoflBoard")
+            .menuItem(MenuItem("Exit").apply {
+                setOnAction {
+                    shutdown()
+                }
+            })
+            .onAction {
+                if (window != null) {
+                    window?.requestFocus()
+                } else {
+                    Main().show(Stage())
+                }
+            }
+            .build()
+        trayIcon.show()
 
         Platform.runLater {
             appData.loadLast()
         }
+    }
+
+    override fun start(primaryStage: Stage) {
+        initApp()
+        show(primaryStage)
+        postInitApp(primaryStage)
     }
 
     private fun initMenu(stage: Stage, root: BorderPane) {
@@ -186,7 +225,13 @@ open class Main : Application() {
                     }
                 }
             }
-            items.addAll(newItem, loadItem, saveItem, saveAsItem)
+
+            val exitItem = MenuItem("Exit")
+            exitItem.setOnAction {
+                shutdown()
+            }
+
+            items.addAll(newItem, loadItem, saveItem, saveAsItem, exitItem)
         }
 
         val helpMenu = Menu("Help")
@@ -415,6 +460,7 @@ open class Main : Application() {
 
             alert.showAndWait()
         }
+        listener.run()
 
         val reloadAllButton = Button("Reload all")
         reloadAllButton.setOnAction {
@@ -452,6 +498,7 @@ open class Main : Application() {
         appData.getMixerMainChange().addListener { _, _, mixerMain ->
             mainMixerComboBox.selectionModel.select(mixerMain)
         }
+        mainMixerComboBox.selectionModel.select(appData.getMixerMainChange().get())
         val refreshMixersButton = Button().apply {
             graphic = ImageView(UiImages.REFRESH)
         }
@@ -478,6 +525,7 @@ open class Main : Application() {
         appData.getMixerSecondaryChange().addListener { _, _, mixerSecondary ->
             secondaryMixerComboBox.selectionModel.select(mixerSecondary)
         }
+        secondaryMixerComboBox.selectionModel.select(appData.getMixerSecondaryChange().get())
         val secondaryMixerCheckBox = CheckBox("Use").apply {
             isSelected = true
         }
@@ -546,6 +594,7 @@ open class Main : Application() {
         appData.getMixerVoiceChange().addListener { _, _, mixerVoice ->
             voiceMixerComboBox.selectionModel.select(mixerVoice)
         }
+        voiceMixerComboBox.selectionModel.select(appData.getMixerVoiceChange().get())
         val refreshMixersButton = Button().apply {
             graphic = ImageView(UiImages.REFRESH)
         }

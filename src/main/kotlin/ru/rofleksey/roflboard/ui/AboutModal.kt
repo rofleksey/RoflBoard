@@ -27,7 +27,7 @@ class AboutModal {
         }, Charset.forName("UTF-8"))
 
         val webView = WebView().apply {
-            engine.loadContent("<center><b>RoflBoard</b><br />Yet another sounboard<br />Made with $heartStr (and no warranty) by Rofleksey</center>")
+            engine.loadContent("<center><b>RoflBoard</b><br />Yet another soundboard<br />Made with $heartStr (and no warranty) by Rofleksey</center>")
         }
 
         windowRoot.add(logoImage, 0, 0)

@@ -20,6 +20,7 @@ dependencies {
     implementation("net.jthink:jaudiotagger:3.0.1")
     implementation("com.dustinredmond.fxtrayicon:FXTrayIcon:4.0.1")
     implementation("com.adonax:audiocue:2.0.0")
+    implementation("io.javalin:javalin:5.6.3")
     implementation(files("lib/TarsosDSP-2.4.jar"))
 }
 
@@ -62,7 +63,7 @@ tasks.test {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "17"
 }
 
 application {

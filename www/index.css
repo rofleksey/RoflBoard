@@ -1,0 +1,20 @@
+.sounds {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  grid-auto-rows: minmax(100px, auto);
+}
+
+.sound {
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+  user-select: none;
+}
+
+.sound:hover {
+  opacity: 0.8;
+}
+
+.sound:active {
+  background-color: #00FF0033
+}

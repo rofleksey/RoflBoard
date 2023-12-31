@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Rofl Board</title>
+    <meta charset="utf-8" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="viewport" content="user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width" />
+    <script src="/alpine.js"></script>
+    <link rel="stylesheet" href="/simple.min.css">
+    <script src="/index.js"></script>
+    <link rel="stylesheet" href="/index.css">
+</head>
+<body>
+<header>
+    <h1>RoflBoard</h1>
+</header>
+<main x-init="initApp()">
+    <template x-if="!$store.connected">
+        <div class="notice" style="background-color: #FF000044" x-data="{ commas: 1 }" x-text="'Connecting to server' + '.'.repeat(commas)" x-init="setInterval(() => commas = Math.floor(Date.now() / 500) % 4, 500)"></div>
+    </template>
+    <template x-if="!$store.sounds.length">
+        <div class="notice">No data</div>
+    </template>
+    <div class="sounds">
+        <template x-for="sound in $store.sounds">
+            <div class="notice sound"
+                 :key="sound.id"
+                 x-text="sound.name"
+                 x-on:mousedown="() => onSoundMouseDown(sound)"
+                 x-on:touchstart="() => onSoundMouseDown(sound)"
+                 x-on:mouseup="() => onSoundMouseUp(sound)"
+                 x-on:touchend="() => onSoundMouseUp(sound)"
+                 x-on:mouseout="() => onSoundMouseUp(sound)"
+                 x-on:touchcancel="() => onSoundMouseUp(sound)"
+            ></div>
+        </template>
+    </div>
+</main>
+<footer>
+    <p>Rofleksey © 2024</p>
+</footer>
+</body>
+</html>

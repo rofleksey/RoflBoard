@@ -106,7 +106,7 @@ open class Main : Application() {
         initMenu(primaryStage, root)
         initContent(primaryStage, root)
 
-        val mainScene = Scene(root, 375.0, 500.0)
+        val mainScene = Scene(root, 500.0, 500.0)
 
         primaryStage.apply {
             title = appData.getConfigName().get()

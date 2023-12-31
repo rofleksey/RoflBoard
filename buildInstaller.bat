@@ -95,7 +95,7 @@ call "%JAVA_HOME%\bin\jpackage" ^
   --icon src/main/resources/logo.ico ^
   --app-version %APP_VERSION% ^
   --vendor "Rofleksey" ^
-  --copyright "Copyright © 2022 Rofleksey" ^
+  --copyright "Copyright © 2024 Rofleksey" ^
   --win-dir-chooser ^
   --win-shortcut ^
   --win-per-user-install ^

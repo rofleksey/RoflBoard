@@ -9,6 +9,7 @@
   cursor: pointer;
   transition: opacity 0.3s ease;
   user-select: none;
+  margin: 0;
 }
 
 .sound:hover {

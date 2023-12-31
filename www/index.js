@@ -1,6 +1,10 @@
 Alpine.store('connected', false);
 Alpine.store('sounds', []);
 
+navigator.wakeLock?.request("screen").catch((e) => {
+  console.error(e);
+})
+
 let ws
 
 function initApp() {

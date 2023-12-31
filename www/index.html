@@ -28,11 +28,11 @@
                  :key="sound.id"
                  x-text="sound.name"
                  x-on:mousedown="() => onSoundMouseDown(sound)"
-                 x-on:touchstart="() => onSoundMouseDown(sound)"
+                 x-on:touchstart.prevent.stop="() => onSoundMouseDown(sound)"
                  x-on:mouseup="() => onSoundMouseUp(sound)"
-                 x-on:touchend="() => onSoundMouseUp(sound)"
+                 x-on:touchend.prevent.stop="() => onSoundMouseUp(sound)"
                  x-on:mouseout="() => onSoundMouseUp(sound)"
-                 x-on:touchcancel="() => onSoundMouseUp(sound)"
+                 x-on:touchcancel.prevent.stop="() => onSoundMouseUp(sound)"
             ></div>
         </template>
     </div>

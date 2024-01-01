@@ -303,8 +303,13 @@ open class Main : Application() {
                 if (template == null) {
                     return@show
                 }
-                val newSound =
-                    SoundEntryJson(template.name, template.files.map { it.absolutePath }, template.type, template.keys)
+                val newSound = SoundEntryJson(
+                    template.name,
+                    template.files.map { it.absolutePath },
+                    template.random,
+                    template.type,
+                    template.keys
+                )
                 appData.editSound(index, newSound)
                 soundBoardTable.sort()
             }
@@ -343,6 +348,7 @@ open class Main : Application() {
                             SoundEntryJson(
                                 template.name,
                                 template.files.map { it.absolutePath },
+                                template.random,
                                 template.type,
                                 template.keys
                             )
@@ -397,8 +403,13 @@ open class Main : Application() {
                 if (template == null) {
                     return@show
                 }
-                val newSound =
-                    SoundEntryJson(template.name, template.files.map { it.absolutePath }, template.type, template.keys)
+                val newSound = SoundEntryJson(
+                    template.name,
+                    template.files.map { it.absolutePath },
+                    template.random,
+                    template.type,
+                    template.keys
+                )
                 appData.addSound(newSound)
                 soundBoardTable.sort()
             }

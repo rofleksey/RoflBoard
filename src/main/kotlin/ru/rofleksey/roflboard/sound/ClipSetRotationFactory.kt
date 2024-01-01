@@ -11,7 +11,13 @@ class ClipSetRotationFactory {
         private var log: Logger = Logger.getLogger(ClipSetRotationFactory::class.java.name)
     }
 
-    fun load(name: String, mixerInfoList: List<Mixer.Info>, files: List<File>, type: SoundType): ClipSetRotation {
+    fun load(
+        name: String,
+        mixerInfoList: List<Mixer.Info>,
+        files: List<File>,
+        type: SoundType,
+        isRandom: Boolean,
+    ): ClipSetRotation {
         val clipSets = files.map { file ->
             val clips = mixerInfoList.map { mixerInfo ->
                 AudioSystem.getClip(mixerInfo).apply {
@@ -22,6 +28,6 @@ class ClipSetRotationFactory {
             }
             ClipSet(name, clips, type)
         }
-        return ClipSetRotation(name, clipSets, type)
+        return ClipSetRotation(name, clipSets, type, isRandom)
     }
 }

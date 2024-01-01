@@ -8,13 +8,18 @@ import kotlin.random.Random
 class ClipSetRotation constructor(
     private val name: String,
     private val clipSets: List<ClipSet>,
-    private val type: SoundType
+    private val type: SoundType,
+    private val isRandom: Boolean,
 ) {
     companion object {
         private var log: Logger = Logger.getLogger(SoundEngine::class.java.name)
     }
 
-    private var curIndex = (clipSets.size * Random.nextFloat()).toInt() % clipSets.size
+    private var curIndex = if (isRandom) {
+        (clipSets.size * Random.nextFloat()).toInt() % clipSets.size
+    } else {
+        0
+    }
 
     fun setVolume(index: Int, volume: Float) {
         clipSets.forEach { clipSet ->
@@ -26,7 +31,12 @@ class ClipSetRotation constructor(
         if (clipSets.size == 1) {
             return
         }
-        curIndex = (curIndex + 1 + ((clipSets.size - 1) * Random.nextFloat()).toInt()) % clipSets.size
+
+        curIndex = if (isRandom) {
+            (curIndex + 1 + ((clipSets.size - 1) * Random.nextFloat()).toInt()) % clipSets.size
+        } else {
+            (curIndex + 1) % clipSets.size
+        }
     }
 
     fun onStartPressed() {

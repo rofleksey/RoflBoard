@@ -26,7 +26,13 @@ import java.io.File
 class SoundModal {
     companion object {
 
-        data class SoundResult(val name: String, val files: List<File>, val type: SoundType, val keys: List<KeyPressed>)
+        data class SoundResult(
+            val name: String,
+            val files: List<File>,
+            val random: Boolean,
+            val type: SoundType,
+            val keys: List<KeyPressed>
+        )
 
         fun show(
             mainStage: Stage,
@@ -37,6 +43,7 @@ class SoundModal {
             var curFiles = soundInfo?.paths?.map { File(it) }
             var curKeys = soundInfo?.keys
             var recording = false
+            var isRandom = soundInfo?.random ?: true
 
             val modalStage = Stage()
             val modalRoot = StackPane()
@@ -56,6 +63,14 @@ class SoundModal {
             }
             val fileButton = Button().apply {
                 graphic = ImageView(UiImages.FILE)
+            }
+
+            val orderLabel = Label("Random order")
+            val orderCheckBox = CheckBox().apply {
+                isSelected = isRandom
+                setOnAction {
+                    isRandom = isSelected
+                }
             }
 
             val nameLabel = Label("Name")
@@ -167,24 +182,26 @@ class SoundModal {
                     return@setOnAction
                 }
 
-                val newSound = SoundResult(newName, newFiles, newType, curKeys!!)
+                val newSound = SoundResult(newName, newFiles, isRandom, newType, curKeys!!)
                 callback(newSound)
                 modalStage.close()
             }
 
             modalContent.add(fileLabel, 0, 0)
             modalContent.add(fileButton, 1, 0)
-            modalContent.add(nameLabel, 0, 1)
-            modalContent.add(nameEdit, 1, 1)
-            modalContent.add(typeLabel, 0, 2)
-            modalContent.add(typeComboBox, 1, 2)
-            modalContent.add(keysLabel, 0, 3)
-            modalContent.add(keysButton, 1, 3)
-            modalContent.add(submitButton, 1, 4)
+            modalContent.add(orderLabel, 0, 1)
+            modalContent.add(orderCheckBox, 1, 1)
+            modalContent.add(nameLabel, 0, 2)
+            modalContent.add(nameEdit, 1, 2)
+            modalContent.add(typeLabel, 0, 3)
+            modalContent.add(typeComboBox, 1, 3)
+            modalContent.add(keysLabel, 0, 4)
+            modalContent.add(keysButton, 1, 4)
+            modalContent.add(submitButton, 1, 5)
 
             modalRoot.children.add(modalContent)
 
-            val modalScene = Scene(modalRoot, 400.0, 175.0)
+            val modalScene = Scene(modalRoot, 400.0, 200.0)
 
             modalStage.apply {
                 scene = modalScene

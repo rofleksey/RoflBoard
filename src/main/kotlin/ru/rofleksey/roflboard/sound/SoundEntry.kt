@@ -8,10 +8,11 @@ data class SoundEntry(
     val id: Int,
     val name: String,
     val paths: List<String>,
+    val random: Boolean,
     val type: SoundType,
     val keys: List<KeyPressed>
 ) {
     fun toJson(): SoundEntryJson {
-        return SoundEntryJson(name = name, paths = paths, type = type, keys = keys)
+        return SoundEntryJson(name = name, paths = paths, random = random, type = type, keys = keys)
     }
 }
